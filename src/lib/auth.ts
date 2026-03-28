@@ -14,3 +14,7 @@ export const loginOwner = async (email: string, password: string) => {
         throw new Error('An unexpected error occurred.');
     }
 }
+
+export const logoutOwner = () => {
+    localStorage.removeItem('token');
+};
