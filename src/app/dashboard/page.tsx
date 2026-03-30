@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import StoreCard from '@/components/store-owner/store-card';
 
 export const metadata: Metadata = {
     title: 'Dashboard',
@@ -6,9 +7,8 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
     return (
-        <main className="flex items-center justify-center min-h-screen flex-col sec-ff">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p>Welcome to your dashboard! This is where you can manage your account and view your data.</p>
+        <main className="min-h-screen sec-ff px-6 py-10 max-w-6xl mx-auto">
+            <StoreCard />
         </main>
-    )
+    );
 }

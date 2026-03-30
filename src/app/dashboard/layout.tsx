@@ -6,6 +6,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { SidebarProvider, useSidebar } from '@/components/sidebar-context';
 import Sidebar from '@/components/store-owner/sidebar';
 import SidebarNav from '@/components/store-owner/sidebar-nav';
+import { Toaster } from 'sonner';
 
 function DashboardShell({ children }: Readonly<{ children: ReactNode }>) {
     const { collapsed } = useSidebar();
@@ -20,6 +21,7 @@ function DashboardShell({ children }: Readonly<{ children: ReactNode }>) {
 
     return (
         <div className="flex min-h-screen">
+            <Toaster position="top-right" />
             <Sidebar />
 
             <main
@@ -30,6 +32,7 @@ function DashboardShell({ children }: Readonly<{ children: ReactNode }>) {
             >
                 <SidebarNav />
                 {children}
+
             </main>
         </div>
     );
