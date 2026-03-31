@@ -84,8 +84,9 @@ export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>
 
             <button
                 type="button"
-                className="text-sm text-left w-fit -mt-1"
+                className="text-sm text-left w-fit -mt-1 cursor-pointer"
                 style={{ fontFamily: "var(--sec-ff)", color: "var(--bg-clr)" }}
+                onClick={() => router.push("/auth/forgot-psw")}
             >
                 Forgot Password?
             </button>
