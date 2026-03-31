@@ -22,6 +22,11 @@ interface EditLocationBody {
     new_address?: string;
 }
 
+interface AddLocationBody {
+    name: string;
+    address: string;
+}
+
 export const createStore = async (storeData: CreateStoreBody) => {
     try {
         const token = localStorage.getItem('token');
@@ -151,6 +156,22 @@ export const activateLocation = async (locationId: string) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(error.response?.data?.message || 'Failed to activate location.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+export const addLocation = async (storeId: string, locations: AddLocationBody[]) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await api.post(`/stores/${storeId}/locations`, locations, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to add location.');
         }
         throw new Error('An unexpected error occurred.');
     }

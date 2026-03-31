@@ -8,6 +8,7 @@ import Spinner from "../ui/spinner";
 import { getProfile } from "@/lib/profile";
 import EditStoreNameModal from "./edit-store-name";
 import EditLocationModal from "./edit-location";
+import AddLocationModal from "./add-location-btn";
 
 interface StoreLocation {
     id: string;
@@ -72,6 +73,16 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                               l.id === locationId ? { ...l, ...updatedFields } : l
                           ),
                       }
+                    : s
+            )
+        );
+    };
+
+    const handleAddLocationSuccess = (storeId: string, newLocations: StoreLocation[]) => {
+        setStores((prev) =>
+            prev.map((s) =>
+                s.id === storeId
+                    ? { ...s, locations: [...s.locations, ...newLocations] }
                     : s
             )
         );
@@ -164,6 +175,9 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                         onLocationEditSuccess={(locationId, updatedFields) =>
                             handleLocationEditSuccess(store.id, locationId, updatedFields)
                         }
+                        onAddLocationSuccess={(newLocations) =>
+                            handleAddLocationSuccess(store.id, newLocations)
+                        }
                         onDeactivateLocation={(locationId) => handleDeactivateLocation(store.id, locationId)}
                         onActivateLocation={(locationId) => handleActivateLocation(store.id, locationId)}
                     />
@@ -180,6 +194,7 @@ function StoreBlock({
     onDeactivate,
     onReactivate,
     onLocationEditSuccess,
+    onAddLocationSuccess,
     onDeactivateLocation,
     onActivateLocation,
 }: Readonly<{
@@ -189,10 +204,12 @@ function StoreBlock({
     onDeactivate: () => Promise<void>;
     onReactivate: () => Promise<void>;
     onLocationEditSuccess: (locationId: string, updatedFields: { name?: string; address?: string }) => void;
+    onAddLocationSuccess: (newLocations: StoreLocation[]) => void;
     onDeactivateLocation: (locationId: string) => Promise<void>;
     onActivateLocation: (locationId: string) => Promise<void>;
 }>) {
     const [editingLocation, setEditingLocation] = useState<StoreLocation | null>(null);
+    const [addingLocation, setAddingLocation] = useState(false);
     const [deactivating, setDeactivating] = useState(false);
     const [reactivating, setReactivating] = useState(false);
 
@@ -223,6 +240,16 @@ function StoreBlock({
                     onSuccess={(locationId, updatedFields) => {
                         onLocationEditSuccess(locationId, updatedFields);
                         setEditingLocation(null);
+                    }}
+                />
+            )}
+            {addingLocation && (
+                <AddLocationModal
+                    storeId={store.id}
+                    onClose={() => setAddingLocation(false)}
+                    onSuccess={(newLocations) => {
+                        onAddLocationSuccess(newLocations);
+                        setAddingLocation(false);
                     }}
                 />
             )}
@@ -274,7 +301,10 @@ function StoreBlock({
                     </div>
                 </div>
 
-                <button className="mt-4 flex items-center gap-1.5 text-sm font-medium bg-(--prof-clr) text-(--txt-clr) px-4 py-2 rounded-md hover:bg-(--acc-clr)/80 transition-colors cursor-pointer">
+                <button
+                    onClick={() => setAddingLocation(true)}
+                    className="mt-4 flex items-center gap-1.5 text-sm font-medium bg-(--prof-clr) text-(--txt-clr) px-4 py-2 rounded-md hover:bg-(--acc-clr)/80 transition-colors cursor-pointer"
+                >
                     <Plus size={14} />
                     Add another location
                 </button>
