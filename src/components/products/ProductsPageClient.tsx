@@ -13,11 +13,14 @@ interface Product {
   status: string;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ProductsPageClient({ storeId }: { storeId?: string }) {
   const [showImport, setShowImport] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([
     {
       sku: "SW-001",
@@ -67,6 +70,12 @@ export default function ProductsPageClient({ storeId }: { storeId?: string }) {
       p.sku.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
   const handleSaveProduct = (product: any) => {
     if (editingProduct?.sku === product.sku) {
       setProducts((prev) =>
@@ -76,6 +85,44 @@ export default function ProductsPageClient({ storeId }: { storeId?: string }) {
       setProducts((prev) => [...prev, { ...product, sku: product.sku }]);
     }
     setEditingProduct(null);
+  };
+
+  const handleExport = () => {
+    if (filteredProducts.length === 0) {
+      alert("No products to export");
+      return;
+    }
+
+    // Prepare CSV header
+    const headers = ["SKU", "Name", "Category", "Price", "Stock", "Status"];
+    const rows = filteredProducts.map((p) => [
+      p.sku,
+      p.name,
+      p.category,
+      p.price,
+      p.stock,
+      p.status,
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `products-export-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -96,7 +143,10 @@ export default function ProductsPageClient({ storeId }: { storeId?: string }) {
         >
           Import
         </button>
-        <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+        >
           Export
         </button>
         <button
@@ -112,17 +162,29 @@ export default function ProductsPageClient({ storeId }: { storeId?: string }) {
       </div>
 
       <ProductsTable
-        products={filteredProducts}
+        products={paginatedProducts}
         onEdit={(p) => setEditingProduct(p)}
       />
 
       <div className="flex items-center justify-between mt-6">
-        <div className="text-xs text-gray-400">Page 1 of 10</div>
+        <div className="text-xs text-gray-500">
+          {filteredProducts.length === 0
+            ? "No products"
+            : `Page ${currentPage} of ${totalPages} • ${filteredProducts.length} total`}
+        </div>
         <div className="flex gap-2">
-          <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Previous
           </button>
-          <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Next
           </button>
         </div>
