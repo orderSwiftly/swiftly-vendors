@@ -39,25 +39,25 @@ export default function EditStoreNameModal({ store, onClose, onSuccess }: Readon
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
             <div className="bg-white rounded-xl p-8 w-full max-w-sm shadow-lg">
-                <h2 className="text-lg font-semibold text-gray-800 text-center">Edit store name</h2>
-                <p className="text-xs text-gray-400 text-center mt-1 mb-6">
+                <h2 className="text-lg font-semibold text-gray-800 text-center pry-ff">Edit store name</h2>
+                <p className="text-xs text-gray-400 text-center mt-1 mb-6 sec-ff">
                     A store can operate across multiple locations
                 </p>
 
-                <p className="text-sm font-medium text-gray-700 mb-3">Store details</p>
+                <p className="text-sm font-medium text-gray-700 mb-3 pry-ff">Store details</p>
 
-                <label className="text-xs text-gray-500 mb-1 block">Store name</label>
+                <label className="text-xs text-gray-500 mb-1 block sec-ff">Store name</label>
                 <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={`e.g ${store.name}`}
-                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-800 outline-none focus:ring-1 focus:ring-gray-300 mb-1"
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-800 outline-none focus:ring-1 focus:ring-gray-300 mb-1 sec-ff"
                 />
 
                 {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
 
-                <div className="flex gap-3 mt-5">
+                <div className="flex gap-3 mt-5 sec-ff">
                     <button
                         onClick={onClose}
                         className="flex-1 border border-gray-200 rounded-md py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -67,7 +67,7 @@ export default function EditStoreNameModal({ store, onClose, onSuccess }: Readon
                     <button
                         onClick={handleConfirm}
                         disabled={loading || !name.trim() || name.trim() === store.name}
-                        className="flex-1 bg-(--prof-clr) text-(--txt-clr) rounded-md py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                        className="flex-1 bg-(--prof-clr) text-(--txt-clr) rounded-md py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
                     >
                         {loading ? "Saving..." : "Confirm"}
                     </button>
