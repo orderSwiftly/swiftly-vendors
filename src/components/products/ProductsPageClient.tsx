@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ProductsTable from "./ProductsTable";
 import ImportModal from "./ImportModal";
 import ProductModal from "./ProductModal";
@@ -15,7 +16,14 @@ interface Product {
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ProductsPageClient({ storeId }: { storeId?: string }) {
+export default function ProductsPageClient({
+  storeId,
+  storeName,
+}: {
+  storeId?: string;
+  storeName?: string;
+}) {
+  const router = useRouter();
   const [showImport, setShowImport] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -126,84 +134,115 @@ export default function ProductsPageClient({ storeId }: { storeId?: string }) {
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 p-6 bg-white">
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          placeholder="Search by name or SKU..."
-        />
-        <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-          <option>All Locations</option>
-        </select>
+    <div>
+      <div className="mb-6 flex items-center gap-3">
         <button
-          onClick={() => setShowImport(true)}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Go back"
         >
-          Import
-        </button>
-        <button
-          onClick={handleExport}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
-        >
-          Export
-        </button>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="px-4 py-2 rounded-lg text-sm font-medium"
-          style={{
-            backgroundColor: "var(--prof-clr)",
-            color: "var(--txt-clr)",
-          }}
-        >
-          + Add Product
-        </button>
-      </div>
-
-      <ProductsTable
-        products={paginatedProducts}
-        onEdit={(p) => setEditingProduct(p)}
-      />
-
-      <div className="flex items-center justify-between mt-6">
-        <div className="text-xs text-gray-500">
-          {filteredProducts.length === 0
-            ? "No products"
-            : `Page ${currentPage} of ${totalPages} • ${filteredProducts.length} total`}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          <svg
+            className="w-5 h-5 text-gray-700"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Previous
-          </button>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages || totalPages === 0}
-            className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {storeName} · {products.length} product
+            {products.length !== 1 ? "s" : ""}
+          </p>
         </div>
       </div>
 
-      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
-      {showAdd && (
-        <ProductModal
-          onClose={() => setShowAdd(false)}
-          onSave={handleSaveProduct}
+      <div className="rounded-xl border border-gray-200 p-6 bg-white">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            placeholder="Search by name or SKU..."
+          />
+          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <option>All Locations</option>
+          </select>
+          <button
+            onClick={() => setShowImport(true)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+          >
+            Import
+          </button>
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+          >
+            Export
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+            style={{
+              backgroundColor: "var(--prof-clr)",
+              color: "var(--txt-clr)",
+            }}
+          >
+            + Add Product
+          </button>
+        </div>
+
+        <ProductsTable
+          products={paginatedProducts}
+          onEdit={(p) => setEditingProduct(p)}
         />
-      )}
-      {editingProduct && (
-        <ProductModal
-          product={editingProduct}
-          onClose={() => setEditingProduct(null)}
-          onSave={handleSaveProduct}
-        />
-      )}
+
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-xs text-gray-500">
+            {filteredProducts.length === 0
+              ? "No products"
+              : `Page ${currentPage} of ${totalPages} • ${filteredProducts.length} total`}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
+        {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+        {showAdd && (
+          <ProductModal
+            onClose={() => setShowAdd(false)}
+            onSave={handleSaveProduct}
+          />
+        )}
+        {editingProduct && (
+          <ProductModal
+            product={editingProduct}
+            onClose={() => setEditingProduct(null)}
+            onSave={handleSaveProduct}
+          />
+        )}
+      </div>
     </div>
   );
 }
