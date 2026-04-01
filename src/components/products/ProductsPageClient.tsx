@@ -156,8 +156,8 @@ export default function ProductsPageClient({
           </svg>
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Products</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-[32px] font-bold text-[#191D23]">Products</h1>
+          <p className="text-[16px] text-[#191D23] mt-1">
             {storeName} · {products.length} product
             {products.length !== 1 ? "s" : ""}
           </p>
@@ -177,19 +177,19 @@ export default function ProductsPageClient({
           </select>
           <button
             onClick={() => setShowImport(true)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
           >
             Import
           </button>
           <button
             onClick={handleExport}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
           >
             Export
           </button>
           <button
             onClick={() => setShowAdd(true)}
-            className="px-4 py-2 rounded-lg text-sm font-medium"
+            className="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
             style={{
               backgroundColor: "var(--prof-clr)",
               color: "var(--txt-clr)",

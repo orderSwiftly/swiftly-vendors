@@ -20,7 +20,7 @@ export default function ProductsTable({
   return (
     <table className="w-full table-auto text-left text-sm">
       <thead>
-        <tr className="text-gray-500 border-b">
+        <tr className="text-[#84919A] border-b">
           <th className="py-3 px-2 w-24">SKU</th>
           <th className="py-3 px-2">NAME</th>
           <th className="py-3 px-2">CATEGORY</th>
@@ -36,7 +36,7 @@ export default function ProductsTable({
             <td className="py-3 px-2 text-xs text-gray-500">{p.sku}</td>
             <td className="py-3 px-2">{p.name}</td>
             <td className="py-3 px-2">
-              <span className="text-xs px-2 py-1 rounded-full border bg-gray-50">
+              <span className="text-xs px-2 py-1 rounded-md border bg-gray-50">
                 {p.category}
               </span>
             </td>
@@ -47,11 +47,11 @@ export default function ProductsTable({
                 style={{
                   backgroundColor:
                     p.status === "Active"
-                      ? "var(--prof-clr, #dff5c2)"
-                      : "#FEE2E2",
-                  color: p.status === "Active" ? "#166534" : "#991B1B",
+                      ? "#D8FF9C"
+                      : "#FFB0A8",
+                  color: p.status === "Active" ? "#355505" : "#991B1B",
                 }}
-                className="text-xs px-2 py-1 rounded-full"
+                className="text-xs px-2 py-1 rounded-md"
               >
                 {p.status}
               </span>
@@ -59,7 +59,7 @@ export default function ProductsTable({
             <td className="py-3 px-2">
               <button
                 onClick={() => onEdit?.(p)}
-                className="px-3 py-1 border rounded text-xs"
+                className="px-3 py-1 border rounded text-xs cursor-pointer"
               >
                 Edit
               </button>
