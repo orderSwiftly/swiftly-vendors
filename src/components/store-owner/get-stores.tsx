@@ -212,6 +212,9 @@ function StoreBlock({
     const [addingLocation, setAddingLocation] = useState(false);
     const [deactivating, setDeactivating] = useState(false);
     const [reactivating, setReactivating] = useState(false);
+    const [locationWarning, setLocationWarning] = useState<string | null>(null);
+
+    const activeLocations = store.locations.filter((l) => l.is_active !== false);
 
     const handleDeactivate = async () => {
         setDeactivating(true);
@@ -229,6 +232,18 @@ function StoreBlock({
         } finally {
             setReactivating(false);
         }
+    };
+
+    const handleDeactivateLocation = async (locationId: string) => {
+        if (activeLocations.length <= 1) {
+            const locationName = store.locations.find((l) => l.id === locationId)?.name ?? "This location";
+            setLocationWarning(
+                `${locationName} is the only active location under ${store.name}. A store must have at least one active location. Deactivate the whole store instead, or add another location first.`
+            );
+            return;
+        }
+        setLocationWarning(null);
+        await onDeactivateLocation(locationId);
     };
 
     return (
@@ -290,13 +305,27 @@ function StoreBlock({
                     <p className="text-sm font-medium text-gray-700 mb-3">Locations</p>
                     <div className="flex flex-col gap-2">
                         {store.locations.map((loc) => (
-                            <LocationRow
-                                key={loc.id}
-                                location={loc}
-                                onEdit={() => setEditingLocation(loc)}
-                                onDeactivate={() => onDeactivateLocation(loc.id)}
-                                onActivate={() => onActivateLocation(loc.id)}
-                            />
+                            <div key={loc.id}>
+                                {locationWarning && activeLocations.length <= 1 && loc.is_active !== false && (
+                                    <div className="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+                                        <p className="text-xs font-semibold text-red-600 mb-0.5">Cannot deactivate this location</p>
+                                        <p className="text-xs text-red-500">{locationWarning}</p>
+                                    </div>
+                                )}
+                                <LocationRow
+                                    location={loc}
+                                    isOnlyActive={activeLocations.length <= 1 && loc.is_active !== false}
+                                    onEdit={() => {
+                                        setLocationWarning(null);
+                                        setEditingLocation(loc);
+                                    }}
+                                    onDeactivate={() => handleDeactivateLocation(loc.id)}
+                                    onActivate={async () => {
+                                        setLocationWarning(null);
+                                        await onActivateLocation(loc.id);
+                                    }}
+                                />
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -315,11 +344,13 @@ function StoreBlock({
 
 function LocationRow({
     location,
+    isOnlyActive,
     onEdit,
     onDeactivate,
     onActivate,
 }: Readonly<{
     location: StoreLocation;
+    isOnlyActive: boolean;
     onEdit: () => void;
     onDeactivate: () => Promise<void>;
     onActivate: () => Promise<void>;
@@ -328,6 +359,10 @@ function LocationRow({
     const [toggling, setToggling] = useState(false);
 
     const handleToggle = async () => {
+        if (isOnlyActive) {
+            await onDeactivate();
+            return;
+        }
         setToggling(true);
         try {
             active ? await onDeactivate() : await onActivate();
@@ -337,10 +372,10 @@ function LocationRow({
     };
 
     return (
-        <div className="flex items-center justify-between p-6 border border-gray-200 rounded-lg">
+        <div className={`flex items-center justify-between p-6 border rounded-lg transition-colors ${isOnlyActive ? "border-red-200 bg-red-50/50" : "border-gray-200"}`}>
             <div>
                 <p className="text-sm text-gray-800 font-semibold">{location.name}</p>
-                <p className="text-xs text-gray-400">{location.address}</p>
+                <p className="text-xs mt-0.5 text-gray-400">{location.address}</p>
             </div>
             <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
