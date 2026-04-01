@@ -41,7 +41,9 @@ export default function ProductsOverviewClient() {
 
   return (
     <div>
-      <h1 className="text-[32px] font-bold text-[#191D23]">View Your Products</h1>
+      <h1 className="text-[32px] font-bold text-[#191D23]">
+        View Your Products
+      </h1>
       <p className="text-[16px] text-[#191D23] mt-1 mb-4">
         Select a store to view your products
       </p>
@@ -60,7 +62,9 @@ export default function ProductsOverviewClient() {
               className="rounded-[10px] border border-gray-200 bg-white p-4 flex flex-col gap-3 cursor-pointer hover:border-(--prof-clr) hover:shadow-sm transition-all"
             >
               <div>
-                <h3 className="font-bold text-[24px] text-[#191D23]">{store.name}</h3>
+                <h3 className="font-bold text-[24px] text-[#191D23]">
+                  {store.name}
+                </h3>
                 <p className="text-[18px] text-[#191D23] mt-0.5">
                   {store.locations?.length ?? 0} location
                   {(store.locations?.length ?? 0) !== 1 ? "s" : ""} ·{" "}
@@ -71,9 +75,7 @@ export default function ProductsOverviewClient() {
                 <span
                   className="text-xs px-2 py-1 rounded-full font-medium"
                   style={{
-                    backgroundColor: store.is_active
-                      ? "var(--prof-clr, #dff5c2)"
-                      : "#FEE2E2",
+                    backgroundColor: store.is_active ? "#D8FF9C" : "#FFEFC3",
                     color: store.is_active ? "#166534" : "#991B1B",
                   }}
                 >
