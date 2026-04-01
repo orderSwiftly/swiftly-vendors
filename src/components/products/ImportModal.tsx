@@ -27,24 +27,43 @@ export default function ImportModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-20 z-50">
+    <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-20 z-50 overflow-auto">
       <div className="w-full max-w-xl bg-white rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-semibold text-center">Import products</h2>
-        <p className="text-xs text-gray-500 text-center mt-1">
+        <h2 className="text-[32px] font-semibold text-center">Import products</h2>
+        <p className="text-[16px] text-[#101828] text-center mt-1">
           SuperStore · Products · Bulk upload via Excel
         </p>
 
-        <div className="mt-4 border rounded-lg p-4">
+        <div className="mt-4 border rounded-lg p-4 text-[16px]">
           <h3 className="font-medium">How it works</h3>
-          <ol className="mt-2 text-sm text-gray-600 space-y-2">
-            <li>1. Download the template</li>
-            <li>2. Fill in your products</li>
-            <li>3. Upload and review</li>
+          <hr className="my-2" />
+          <ol className="mt-2 space-y-2">
+            <li className="font-bold">
+              1. Download the template <br />
+              <span className="text-[14px] font-normal">
+                Use the official template. Do not change column headers.
+              </span>
+            </li>
+            <hr className="my-2" />
+            <li className="font-bold">
+              2. Fill in your products <br />
+              <span className="text-[14px] font-normal">
+                Required: Name, SKU, Price. Optional: Category, Description.
+              </span>
+            </li>
+            <hr className="my-2" />
+            <li className="font-bold">
+              3. Upload and review <br />
+              <span className="text-[14px] font-normal">
+                We validate before importing. Duplicate SKUs will be flagged.
+              </span>
+            </li>
+            <hr className="my-2" />
           </ol>
           <button
-            className="mt-3 px-4 py-2 rounded"
+            className="mt-3 px-4 py-2 rounded-[10px] cursor-pointer text-sm font-medium"
             style={{
-              backgroundColor: "var(--prof-clr)",
+              backgroundColor: "#669917",
               color: "var(--txt-clr)",
             }}
           >
@@ -98,13 +117,13 @@ export default function ImportModal({ onClose }: { onClose: () => void }) {
         <div className="mt-4 flex justify-between gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleImport}
-            className="flex-1 px-4 py-2 rounded font-medium"
+            className="flex-1 px-4 py-2 rounded font-medium cursor-pointer"
             style={{
               backgroundColor: "var(--prof-clr)",
               color: "var(--txt-clr)",
