@@ -3,11 +3,14 @@ import { useState } from "react";
 import { adjustStock } from "@/lib/inventory";
 
 interface InventoryItem {
+  _id?: string;
   sku: string;
   name: string;
-  stockLevel: string;
+  current_stock?: number;
+  max_stock?: number;
+  stockLevel?: string;
   productId?: string;
-  status: "In Stock" | "Out Of Stock" | "Low Stock";
+  status: "In Stock" | "Out Of Stock" | "Low Stock" | string;
 }
 
 export default function AdjustStockModal({
@@ -29,7 +32,7 @@ export default function AdjustStockModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const currentStock = parseInt(item.stockLevel.split("/")[0]);
+  const currentStock = item.current_stock || 0;
   const newTotal =
     adjustmentType === "add"
       ? currentStock + parseInt(quantity)

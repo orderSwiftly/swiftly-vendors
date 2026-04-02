@@ -1,15 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import InventoryTable from "./InventoryTable";
 import AdjustStockModal from "./AdjustStockModal";
+import { fetchInventoryByLocation } from "@/lib/inventory";
 
 interface InventoryItem {
+  _id?: string;
   sku: string;
   name: string;
-  stockLevel: string;
+  current_stock?: number;
+  max_stock?: number;
+  stockLevel?: string;
   productId?: string;
-  status: "In Stock" | "Out Of Stock" | "Low Stock";
+  status: "In Stock" | "Out Of Stock" | "Low Stock" | string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -30,52 +34,41 @@ export default function InventoryPageClient({
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample inventory data
-  const inventoryData: InventoryItem[] = [
-    {
-      sku: "SW-001",
-      name: "Indomie Chicken 70g",
-      stockLevel: "400/500",
-      status: "In Stock",
-    },
-    {
-      sku: "SW-002",
-      name: "Milo 400g Tin",
-      stockLevel: "60/90",
-      status: "Out Of Stock",
-    },
-    {
-      sku: "SW-003",
-      name: "Closeup Toothpaste",
-      stockLevel: "0/65",
-      status: "Out Of Stock",
-    },
-    {
-      sku: "SW-004",
-      name: "Biro (Blue)",
-      stockLevel: "9/54",
-      status: "Low Stock",
-    },
-    {
-      sku: "SW-005",
-      name: "Peak Milk 170g",
-      stockLevel: "6/70",
-      status: "Low Stock",
-    },
-  ];
+  // Get current location ID
+  const selectedLocationId = locations.find(
+    (l) => l.location_name === selectedLocation,
+  )?._id;
 
-  const filteredItems = inventoryData.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Fetch inventory when location or search changes
+  useEffect(() => {
+    if (!selectedLocationId) return;
 
-  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
-  const paginatedItems = filteredItems.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
+    const loadInventory = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetchInventoryByLocation(
+          selectedLocationId,
+          currentPage,
+          searchQuery,
+        );
+        setInventoryData(response.data || []);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch inventory",
+        );
+        setInventoryData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInventory();
+  }, [selectedLocationId, currentPage, searchQuery]);
 
   return (
     <div>
@@ -113,13 +106,19 @@ export default function InventoryPageClient({
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm"
             placeholder="Search products..."
           />
           <select
             value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
+            onChange={(e) => {
+              setSelectedLocation(e.target.value);
+              setCurrentPage(1);
+            }}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
           >
             {locations.map((loc) => (
@@ -130,47 +129,70 @@ export default function InventoryPageClient({
           </select>
         </div>
 
-        <InventoryTable
-          items={paginatedItems}
-          onAdjustStock={(item) => setSelectedItem(item)}
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+              <p className="text-sm text-gray-500">Loading inventory...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-sm text-red-500 mb-2">{error}</p>
+              <p className="text-xs text-gray-400">
+                Please make sure the backend endpoint is available
+              </p>
+            </div>
+          </div>
+        ) : inventoryData.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-sm text-gray-500">No inventory items found</p>
+          </div>
+        ) : (
+          <>
+            <InventoryTable
+              items={inventoryData}
+              onAdjustStock={(item) => setSelectedItem(item)}
+            />
 
-        <div className="flex items-center justify-between mt-6">
-          <div className="text-xs text-gray-500">
-            {filteredItems.length === 0
-              ? "No items"
-              : `Page ${currentPage} of ${totalPages}`}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-xs text-gray-500">
+                {inventoryData.length === 0
+                  ? "No items"
+                  : `Showing ${inventoryData.length} items`}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={inventoryData.length < ITEMS_PER_PAGE}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {selectedItem && (
         <AdjustStockModal
           item={selectedItem}
           storeName={selectedLocation}
-          locationId={
-            locations.find((l) => l.location_name === selectedLocation)?._id
-          }
+          locationId={selectedLocationId}
           onClose={() => setSelectedItem(null)}
           onSuccess={() => {
-            // Refresh inventory or handle success
             setSelectedItem(null);
+            // Reset page and reload inventory
+            setCurrentPage(1);
           }}
         />
       )}

@@ -1,17 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProductsTable from "./ProductsTable";
 import ImportModal from "./ImportModal";
 import ProductModal from "./ProductModal";
+import { fetchProductsByStore } from "@/lib/products";
 
 interface Product {
+  _id?: string;
   sku: string;
   name: string;
   category: string;
-  price: string;
-  stock: string;
-  status: string;
+  price: number | string;
+  stock?: string | number;
+  status: boolean | string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -29,48 +31,42 @@ export default function ProductsPageClient({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [products, setProducts] = useState<Product[]>([
-    {
-      sku: "SW-001",
-      name: "Indomie Chicken 70g",
-      category: "Food",
-      price: "₦1,200",
-      stock: "500",
-      status: "Active",
-    },
-    {
-      sku: "SW-002",
-      name: "Milo 400g Tin",
-      category: "Toiletries",
-      price: "₦4,500",
-      stock: "67",
-      status: "Inactive",
-    },
-    {
-      sku: "SW-003",
-      name: "Closeup Toothpaste",
-      category: "Stationery",
-      price: "₦1,200",
-      stock: "Out Of Stock",
-      status: "Active",
-    },
-    {
-      sku: "SW-004",
-      name: "Biro (Blue)",
-      category: "Food",
-      price: "₦8,750",
-      stock: "34",
-      status: "Active",
-    },
-    {
-      sku: "SW-005",
-      name: "Peak Milk 170g",
-      category: "Stationery",
-      price: "₦2,600",
-      stock: "87",
-      status: "Inactive",
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products from API
+  useEffect(() => {
+    if (!storeId) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchProductsByStore(
+          storeId,
+          currentPage,
+          searchQuery,
+        );
+        if (!mounted) return;
+        const productList = Array.isArray(data) ? data : data?.data || [];
+        setProducts(productList);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err.message || "Failed to load products");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [storeId, currentPage, searchQuery]);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -84,7 +80,7 @@ export default function ProductsPageClient({
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const handleSaveProduct = (product: any) => {
+  const handleSaveProduct = async (product: any) => {
     if (editingProduct?.sku === product.sku) {
       setProducts((prev) =>
         prev.map((p) => (p.sku === product.sku ? product : p)),
@@ -93,6 +89,8 @@ export default function ProductsPageClient({
       setProducts((prev) => [...prev, { ...product, sku: product.sku }]);
     }
     setEditingProduct(null);
+    // Optionally refresh products list
+    // setCurrentPage(1);
   };
 
   const handleExport = () => {
@@ -102,14 +100,13 @@ export default function ProductsPageClient({
     }
 
     // Prepare CSV header
-    const headers = ["SKU", "Name", "Category", "Price", "Stock", "Status"];
+    const headers = ["SKU", "Name", "Category", "Price", "Status"];
     const rows = filteredProducts.map((p) => [
       p.sku,
       p.name,
       p.category,
       p.price,
-      p.stock,
-      p.status,
+      p.status === true || p.status === "Active" ? "Active" : "Inactive",
     ]);
 
     // Create CSV content
@@ -165,68 +162,86 @@ export default function ProductsPageClient({
       </div>
 
       <div className="rounded-xl border border-gray-200 p-6 bg-white">
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            placeholder="Search by name or SKU..."
-          />
-          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-            <option>All Locations</option>
-          </select>
-          <button
-            onClick={() => setShowImport(true)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
-          >
-            Import
-          </button>
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
-          >
-            Export
-          </button>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
-            style={{
-              backgroundColor: "var(--prof-clr)",
-              color: "var(--txt-clr)",
-            }}
-          >
-            + Add Product
-          </button>
-        </div>
-
-        <ProductsTable
-          products={paginatedProducts}
-          onEdit={(p) => setEditingProduct(p)}
-        />
-
-        <div className="flex items-center justify-between mt-6">
-          <div className="text-xs text-gray-500">
-            {filteredProducts.length === 0
-              ? "No products"
-              : `Page ${currentPage} of ${totalPages} • ${filteredProducts.length} total`}
+        {loading ? (
+          <div className="py-10 text-center text-gray-500">
+            Loading products...
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+        ) : error ? (
+          <div className="py-10 px-4 bg-red-50 border border-red-200 rounded text-red-700">
+            {error}
           </div>
-        </div>
+        ) : products.length === 0 ? (
+          <div className="py-10 text-center text-gray-500">
+            No products found
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 min-w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder="Search by name or SKU..."
+              />
+              <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option>All Locations</option>
+              </select>
+              <button
+                onClick={() => setShowImport(true)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
+              >
+                Import
+              </button>
+              <button
+                onClick={handleExport}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
+              >
+                Export
+              </button>
+              <button
+                onClick={() => setShowAdd(true)}
+                className="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                style={{
+                  backgroundColor: "var(--prof-clr)",
+                  color: "var(--txt-clr)",
+                }}
+              >
+                + Add Product
+              </button>
+            </div>
+
+            <ProductsTable
+              products={paginatedProducts}
+              onEdit={(p) => setEditingProduct(p)}
+            />
+
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-xs text-gray-500">
+                {filteredProducts.length === 0
+                  ? "No products"
+                  : `Page ${currentPage} of ${totalPages} • ${filteredProducts.length} total`}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {showImport && <ImportModal onClose={() => setShowImport(false)} />}
         {showAdd && (

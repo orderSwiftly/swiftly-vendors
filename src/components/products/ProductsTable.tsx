@@ -2,12 +2,13 @@
 import React from "react";
 
 interface Product {
+  _id?: string;
   sku: string;
   name: string;
   category: string;
-  price: string;
-  stock: string;
-  status: string;
+  price: string | number;
+  stock?: string | number;
+  status: string | boolean;
 }
 
 export default function ProductsTable({
@@ -46,14 +47,21 @@ export default function ProductsTable({
               <span
                 style={{
                   backgroundColor:
-                    p.status === "Active"
+                    p.status === "Active" || p.status === true
                       ? "#D8FF9C"
                       : "#FFB0A8",
-                  color: p.status === "Active" ? "#355505" : "#991B1B",
+                  color:
+                    p.status === "Active" || p.status === true
+                      ? "#355505"
+                      : "#991B1B",
                 }}
                 className="text-xs px-2 py-1 rounded-md"
               >
-                {p.status}
+                {p.status === true
+                  ? "Active"
+                  : p.status === false
+                    ? "Inactive"
+                    : p.status}
               </span>
             </td>
             <td className="py-3 px-2">
