@@ -8,6 +8,7 @@ interface InventoryItem {
   sku: string;
   name: string;
   stockLevel: string;
+  productId?: string;
   status: "In Stock" | "Out Of Stock" | "Low Stock";
 }
 
@@ -163,7 +164,14 @@ export default function InventoryPageClient({
         <AdjustStockModal
           item={selectedItem}
           storeName={selectedLocation}
+          locationId={
+            locations.find((l) => l.location_name === selectedLocation)?._id
+          }
           onClose={() => setSelectedItem(null)}
+          onSuccess={() => {
+            // Refresh inventory or handle success
+            setSelectedItem(null);
+          }}
         />
       )}
     </div>
