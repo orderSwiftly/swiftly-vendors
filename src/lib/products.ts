@@ -13,6 +13,38 @@ export interface Product extends ProductInput {
   id?: string;
 }
 
+export interface ProductResponse {
+  data: Product[];
+  total?: number;
+}
+
+export const fetchProductsByStore = async (
+  storeId: string,
+  page = 1,
+  search = "",
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "10",
+    });
+    if (search) {
+      params.append("search", search);
+    }
+    const response = await api.get(`/stores/${storeId}/products?${params}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch products",
+    );
+  }
+};
+
 export const addProduct = async (
   storeId: string,
   productData: ProductInput,
