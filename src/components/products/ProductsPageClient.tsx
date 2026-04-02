@@ -232,12 +232,14 @@ export default function ProductsPageClient({
         {showAdd && (
           <ProductModal
             onClose={() => setShowAdd(false)}
+            storeId={storeId}
             onSave={handleSaveProduct}
           />
         )}
         {editingProduct && (
           <ProductModal
             product={editingProduct}
+            storeId={storeId}
             onClose={() => setEditingProduct(null)}
             onSave={handleSaveProduct}
           />
