@@ -66,8 +66,11 @@ export default function InventoryPageClient({
         console.log("Found store:", store);
         if (store) {
           setStoreName(store.store_name || store.name || "Store");
-          const storeLocations = store.locations || [];
-          console.log("Store locations:", storeLocations);
+          const storeLocations = (store.locations || []).map((loc: any) => ({
+            _id: loc._id || loc.id,
+            location_name: loc.location_name || loc.name,
+          }));
+          console.log("Normalized store locations:", storeLocations);
           setLocations(storeLocations);
           if (storeLocations.length > 0) {
             setSelectedLocation(storeLocations[0].location_name);
