@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getStores } from "@/lib/store";
+import { fetchInventoryByLocation } from "@/lib/inventory";
 import Spinner from "../ui/spinner";
 
 interface Store {
@@ -26,6 +27,9 @@ export default function InventoryOverviewClient({
     !initialStores || initialStores.length === 0,
   );
   const [error, setError] = useState<string | null>(null);
+  const [inventoryCounts, setInventoryCounts] = useState<
+    Record<string, number>
+  >({});
 
   useEffect(() => {
     if (stores.length > 0) return; // Already have stores
@@ -38,6 +42,35 @@ export default function InventoryOverviewClient({
         if (!mounted) return;
         const list = Array.isArray(data) ? data : data?.data || [];
         setStores(list);
+
+        // Fetch inventory count for each location in each store
+        const counts: Record<string, number> = {};
+        for (const store of list) {
+          const locations = store.locations || [];
+          for (const location of locations) {
+            const locationId = location._id || location.id;
+            try {
+              const inventoryData = await fetchInventoryByLocation(
+                locationId,
+                1,
+                "",
+              );
+              const inventoryList = Array.isArray(inventoryData)
+                ? inventoryData
+                : inventoryData?.data || [];
+              counts[locationId] = inventoryList.length;
+            } catch (err) {
+              console.error(
+                `Failed to fetch inventory for location ${locationId}:`,
+                err,
+              );
+              counts[locationId] = 0;
+            }
+          }
+        }
+        if (mounted) {
+          setInventoryCounts(counts);
+        }
       } catch (err: unknown) {
         if (mounted) {
           setError(
@@ -80,8 +113,11 @@ export default function InventoryOverviewClient({
           {stores.map((store) => {
             const storeId = store._id || store.id;
             const storeName = store.store_name || store.name || "Store";
-            const productCount =
-              store.product_count || store.products_count || 0;
+            const locations = store.locations || [];
+            const totalInventoryCount = locations.reduce((sum, location) => {
+              const locationId = location._id || location.id;
+              return sum + (inventoryCounts[locationId] ?? 0);
+            }, 0);
 
             return (
               <button
@@ -93,8 +129,8 @@ export default function InventoryOverviewClient({
                   {storeName}
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {store.locations?.length || 0} location
-                  {(store.locations?.length || 0) !== 1 ? "s" : ""} ·{" "}
+                  {locations.length} location
+                  {locations.length !== 1 ? "s" : ""} ·{" "}
                   <span
                     style={{
                       color: store.is_active ? "var(--prof-clr)" : "#991B1B",
@@ -121,8 +157,8 @@ export default function InventoryOverviewClient({
                       color: "#8A6500",
                     }}
                   >
-                    {productCount} product
-                    {productCount !== 1 ? "s" : ""}
+                    {totalInventoryCount} item
+                    {totalInventoryCount !== 1 ? "s" : ""}
                   </span>
                 </div>
               </button>
