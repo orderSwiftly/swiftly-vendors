@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getStores } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import Spinner from "../ui/spinner";
 
 interface StoreData {
   id: string;
@@ -49,7 +50,9 @@ export default function ProductsOverviewClient() {
       </p>
 
       {loading ? (
-        <div className="py-10 text-gray-500">Loading stores...</div>
+        <div className="py-10 text-gray-500">
+          <Spinner />
+        </div>
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
