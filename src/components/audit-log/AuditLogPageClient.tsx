@@ -184,11 +184,11 @@ export default function AuditLogPageClient({
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex justify-between flex-wrap">
           <select
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-[#667085] focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Locations</option>
             {locations.map((loc) => (
@@ -198,71 +198,66 @@ export default function AuditLogPageClient({
             ))}
           </select>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="successful">Successful</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-          </select>
-
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {paginatedLogs.map((log, idx) => {
-          const actionColor = getActionTypeColor(log.action_type);
-          return (
-            <div
-              key={idx}
-              className="flex gap-3 items-center border border-gray-200 rounded-lg p-4"
+          <div className="flex gap-4">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-[#667085] focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <span
-                className="px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap"
-                style={{
-                  backgroundColor: actionColor.bg,
-                  color: actionColor.text,
-                }}
+              <option value="all">All Statuses</option>
+              <option value="successful">Successful</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-[#667085] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {paginatedLogs.map((log, idx) => {
+            return (
+              <div
+                key={idx}
+                className="flex gap-4 sm:justify-between items-center border-b border-gray-200 py-4"
               >
-                {log.action_type}
-              </span>
+                <span className="w-50 text-center py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap border border-[#D0D5DD]">
+                  {log.action_type}
+                </span>
 
-              <p className="text-sm text-gray-900 flex-1">
-                {log.user} · {log.timestamp} {log.description}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+                <p className="text-xs sm:text-sm text-gray-900">
+                  {log.user} · {log.timestamp} {log.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
 
-      <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Previous
-          </button>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Next
-          </button>
+        <div className="flex justify-between items-center mt-8 pt-6">
+          <p className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-[#667085] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-[#667085] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>
