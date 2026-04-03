@@ -12,8 +12,7 @@ interface Product {
   name: string;
   category: string;
   price: number | string;
-  stock?: string | number;
-  status: boolean | string;
+  is_active?: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -106,7 +105,7 @@ export default function ProductsPageClient({
       p.name,
       p.category,
       p.price,
-      p.status === true || p.status === "Active" ? "Active" : "Inactive",
+      p.is_active ? "Active" : "Inactive",
     ]);
 
     // Create CSV content

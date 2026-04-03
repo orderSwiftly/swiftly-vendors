@@ -17,11 +17,7 @@ export default function ProductModal({
   const [sku, setSku] = useState(product?.sku ?? "");
   const [price, setPrice] = useState(product?.price ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
-  const [status, setStatus] = useState(
-    product?.status === "Active" || product?.status === true
-      ? "Active"
-      : "Inactive",
-  );
+  const [isActive, setIsActive] = useState(product?.is_active ?? true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +36,7 @@ export default function ProductModal({
         sku,
         price: price ? parseFloat(price.toString()) : 0,
         category,
-        status: status === "Active",
+        is_active: isActive,
       };
 
       if (product?.id || product?._id) {
@@ -59,7 +55,7 @@ export default function ProductModal({
         sku,
         price,
         category,
-        status,
+        is_active: isActive,
       });
       onClose();
     } catch (err: any) {
@@ -131,12 +127,12 @@ export default function ProductModal({
         <div className="mt-4 grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => setStatus("Active")}
+            onClick={() => setIsActive(true)}
             disabled={loading}
-            className={`px-3 py-2 rounded border transition-all cursor-pointer disabled:opacity-50 ${status === "Active" ? "border-green-500" : "border-gray-200"}`}
+            className={`px-3 py-2 rounded border transition-all cursor-pointer disabled:opacity-50 ${isActive ? "border-green-500" : "border-gray-200"}`}
             style={{
-              backgroundColor: status === "Active" ? "#D8FF9C" : "transparent",
-              color: status === "Active" ? "#166534" : "#333",
+              backgroundColor: isActive ? "#D8FF9C" : "transparent",
+              color: isActive ? "#166534" : "#333",
             }}
           >
             <div className="text-sm font-medium">Active</div>
@@ -144,13 +140,12 @@ export default function ProductModal({
           </button>
           <button
             type="button"
-            onClick={() => setStatus("Inactive")}
+            onClick={() => setIsActive(false)}
             disabled={loading}
-            className={`px-3 py-2 rounded border transition-all cursor-pointer disabled:opacity-50 ${status === "Inactive" ? "border-red-300" : "border-gray-200"}`}
+            className={`px-3 py-2 rounded border transition-all cursor-pointer disabled:opacity-50 ${!isActive ? "border-red-300" : "border-gray-200"}`}
             style={{
-              backgroundColor:
-                status === "Inactive" ? "#FEE2E2" : "transparent",
-              color: status === "Inactive" ? "#991B1B" : "#333",
+              backgroundColor: !isActive ? "#FEE2E2" : "transparent",
+              color: !isActive ? "#991B1B" : "#333",
             }}
           >
             <div className="text-sm font-medium">Inactive</div>

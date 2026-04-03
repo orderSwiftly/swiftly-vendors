@@ -11,8 +11,6 @@ export interface InventoryItem {
   sku: string;
   name: string;
   current_stock?: number;
-  max_stock?: number;
-  status?: string;
 }
 
 export interface InventoryResponse {

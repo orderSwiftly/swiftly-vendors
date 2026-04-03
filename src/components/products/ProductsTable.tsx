@@ -7,8 +7,7 @@ interface Product {
   name: string;
   category: string;
   price: string | number;
-  stock?: string | number;
-  status: string | boolean;
+  is_active?: boolean;
 }
 
 export default function ProductsTable({
@@ -26,7 +25,6 @@ export default function ProductsTable({
           <th className="py-3 px-2">NAME</th>
           <th className="py-3 px-2">CATEGORY</th>
           <th className="py-3 px-2">PRICE</th>
-          <th className="py-3 px-2">STOCK</th>
           <th className="py-3 px-2">STATUS</th>
           <th className="py-3 px-2">&nbsp;</th>
         </tr>
@@ -42,26 +40,15 @@ export default function ProductsTable({
               </span>
             </td>
             <td className="py-3 px-2">{p.price}</td>
-            <td className="py-3 px-2">{p.stock}</td>
             <td className="py-3 px-2">
               <span
                 style={{
-                  backgroundColor:
-                    p.status === "Active" || p.status === true
-                      ? "#D8FF9C"
-                      : "#FFB0A8",
-                  color:
-                    p.status === "Active" || p.status === true
-                      ? "#355505"
-                      : "#991B1B",
+                  backgroundColor: p.is_active ? "#D8FF9C" : "#FFB0A8",
+                  color: p.is_active ? "#355505" : "#991B1B",
                 }}
                 className="text-xs px-2 py-1 rounded-md"
               >
-                {p.status === true
-                  ? "Active"
-                  : p.status === false
-                    ? "Inactive"
-                    : p.status}
+                {p.is_active ? "Active" : "Inactive"}
               </span>
             </td>
             <td className="py-3 px-2">

@@ -10,10 +10,7 @@ interface InventoryItem {
   sku: string;
   name: string;
   current_stock?: number;
-  max_stock?: number;
-  stockLevel?: string;
   productId?: string;
-  status: "In Stock" | "Out Of Stock" | "Low Stock" | string;
 }
 
 const ITEMS_PER_PAGE = 10;

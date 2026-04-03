@@ -5,12 +5,13 @@ export interface ProductInput {
   sku: string;
   price: number | string;
   category: string;
-  status: boolean | string;
+  is_active?: boolean;
 }
 
 export interface Product extends ProductInput {
   _id?: string;
   id?: string;
+  is_active?: boolean;
 }
 
 export interface ProductResponse {

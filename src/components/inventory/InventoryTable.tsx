@@ -5,9 +5,6 @@ interface InventoryItem {
   sku: string;
   name: string;
   current_stock?: number;
-  max_stock?: number;
-  stockLevel?: string;
-  status: "In Stock" | "Out Of Stock" | "Low Stock" | string;
 }
 
 export default function InventoryTable({
@@ -17,17 +14,18 @@ export default function InventoryTable({
   items: InventoryItem[];
   onAdjustStock: (item: InventoryItem) => void;
 }) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "In Stock":
-        return { background: "#D8FF9C", text: "#553F03" };
-      case "Out Of Stock":
-        return { background: "#FFB0A8", text: "#553F03" };
-      case "Low Stock":
-        return { background: "#FFD970", text: "#553F03" };
-      default:
-        return { background: "#F3F4F6", text: "#6B7280" };
-    }
+  const getStatusColor = (stock: number | undefined) => {
+    if (stock === undefined) return { background: "#F3F4F6", text: "#6B7280" };
+    if (stock === 0) return { background: "#FFB0A8", text: "#553F03" }; // Out of Stock
+    if (stock < 50) return { background: "#FFD970", text: "#553F03" }; // Low Stock
+    return { background: "#D8FF9C", text: "#553F03" }; // In Stock
+  };
+
+  const getStatusText = (stock: number | undefined) => {
+    if (stock === undefined) return "Unknown";
+    if (stock === 0) return "Out Of Stock";
+    if (stock < 50) return "Low Stock";
+    return "In Stock";
   };
 
   return (
@@ -37,14 +35,17 @@ export default function InventoryTable({
           <tr className="border-b border-gray-200">
             <th className="text-left py-3 px-4 text-[#84919A]">SKU</th>
             <th className="text-left py-3 px-4 text-[#84919A]">PRODUCT</th>
-            <th className="text-left py-3 px-4 text-[#84919A]">STOCK LEVEL</th>
+            <th className="text-left py-3 px-4 text-[#84919A]">
+              CURRENT STOCK
+            </th>
             <th className="text-left py-3 px-4 text-[#84919A]">STATUS</th>
             <th className="text-left py-3 px-4 text-[#84919A]">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, idx) => {
-            const statusColor = getStatusColor(item.status);
+            const statusColor = getStatusColor(item.current_stock);
+            const statusText = getStatusText(item.current_stock);
             return (
               <tr
                 key={idx}
@@ -53,11 +54,7 @@ export default function InventoryTable({
                 <td className="py-3 px-4 text-gray-900">{item.sku}</td>
                 <td className="py-3 px-4 text-gray-900">{item.name}</td>
                 <td className="py-3 px-4 text-gray-900">
-                  {item.stockLevel ||
-                    (item.current_stock !== undefined &&
-                    item.max_stock !== undefined
-                      ? `${item.current_stock}/${item.max_stock}`
-                      : "N/A")}
+                  {item.current_stock ?? "N/A"}
                 </td>
                 <td className="py-3 px-4">
                   <span
@@ -67,7 +64,7 @@ export default function InventoryTable({
                       color: statusColor.text,
                     }}
                   >
-                    {item.status}
+                    {statusText}
                   </span>
                 </td>
                 <td className="py-3 px-4">
