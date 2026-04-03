@@ -43,12 +43,12 @@ export default function InventoryTable({
           </tr>
         </thead>
         <tbody>
-          {items.map((item, idx) => {
+          {items.map((item) => {
             const statusColor = getStatusColor(item.current_stock);
             const statusText = getStatusText(item.current_stock);
             return (
               <tr
-                key={idx}
+                key={item._id || item.sku}
                 className="border-b border-gray-100 hover:bg-gray-50"
               >
                 <td className="py-3 px-4 text-gray-900">{item.sku}</td>

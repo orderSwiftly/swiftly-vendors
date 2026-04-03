@@ -40,28 +40,45 @@ export default function InventoryPageClient({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [storeLoading, setStoreLoading] = useState(!initialLocations);
+  const [storeNotFound, setStoreNotFound] = useState(false);
 
   // Fetch store data if not provided
   useEffect(() => {
-    if (initialLocations && initialStoreName) {
+    if (initialLocations && initialLocations.length > 0) {
+      setLocations(initialLocations);
+      setSelectedLocation(initialLocations[0]?.location_name || "");
       setStoreLoading(false);
       return;
     }
 
     const loadStoreData = async () => {
       try {
+        const hasToken =
+          typeof window !== "undefined" && !!localStorage.getItem("token");
+        console.log("Has token:", hasToken);
         const response = await getStores();
+        console.log("Store response:", response);
         const stores = Array.isArray(response) ? response : response.data || [];
+        console.log("Parsed stores:", stores);
         const store = stores.find(
           (s: any) => s._id === storeId || s.id === storeId,
         );
+        console.log("Found store:", store);
         if (store) {
           setStoreName(store.store_name || store.name || "Store");
-          setLocations(store.locations || []);
-          setSelectedLocation(store.locations?.[0]?.location_name || "");
+          const storeLocations = store.locations || [];
+          console.log("Store locations:", storeLocations);
+          setLocations(storeLocations);
+          if (storeLocations.length > 0) {
+            setSelectedLocation(storeLocations[0].location_name);
+          }
+        } else {
+          console.warn(`Store with ID ${storeId} not found in stores list`);
+          setStoreNotFound(true);
         }
       } catch (err) {
         console.error("Failed to fetch store data:", err);
+        setStoreNotFound(true);
       } finally {
         setStoreLoading(false);
       }
@@ -109,6 +126,18 @@ export default function InventoryPageClient({
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
             <p className="text-sm text-gray-500">Loading store inventory...</p>
+          </div>
+        </div>
+      ) : storeNotFound ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-sm text-red-500 mb-4">Store not found</p>
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+            >
+              Go Back
+            </button>
           </div>
         </div>
       ) : (
@@ -162,6 +191,9 @@ export default function InventoryPageClient({
                 }}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
               >
+                <option key="default" value="">
+                  Select a location...
+                </option>
                 {locations.map((loc) => (
                   <option key={loc._id} value={loc.location_name}>
                     {loc.location_name}
