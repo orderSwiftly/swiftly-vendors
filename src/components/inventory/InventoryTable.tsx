@@ -1,10 +1,13 @@
 "use client";
 
 interface InventoryItem {
+  _id?: string;
   sku: string;
   name: string;
-  stockLevel: string;
-  status: "In Stock" | "Out Of Stock" | "Low Stock";
+  current_stock?: number;
+  max_stock?: number;
+  stockLevel?: string;
+  status: "In Stock" | "Out Of Stock" | "Low Stock" | string;
 }
 
 export default function InventoryTable({
@@ -32,21 +35,11 @@ export default function InventoryTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-4 text-[#84919A]">
-              SKU
-            </th>
-            <th className="text-left py-3 px-4 text-[#84919A]">
-              PRODUCT
-            </th>
-            <th className="text-left py-3 px-4 text-[#84919A]">
-              STOCK LEVEL
-            </th>
-            <th className="text-left py-3 px-4 text-[#84919A]">
-              STATUS
-            </th>
-            <th className="text-left py-3 px-4 text-[#84919A]">
-              ACTIONS
-            </th>
+            <th className="text-left py-3 px-4 text-[#84919A]">SKU</th>
+            <th className="text-left py-3 px-4 text-[#84919A]">PRODUCT</th>
+            <th className="text-left py-3 px-4 text-[#84919A]">STOCK LEVEL</th>
+            <th className="text-left py-3 px-4 text-[#84919A]">STATUS</th>
+            <th className="text-left py-3 px-4 text-[#84919A]">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
@@ -57,11 +50,15 @@ export default function InventoryTable({
                 key={idx}
                 className="border-b border-gray-100 hover:bg-gray-50"
               >
-                <td className="py-3 px-4 text-gray-900">
-                  {item.sku}
-                </td>
+                <td className="py-3 px-4 text-gray-900">{item.sku}</td>
                 <td className="py-3 px-4 text-gray-900">{item.name}</td>
-                <td className="py-3 px-4 text-gray-900">{item.stockLevel}</td>
+                <td className="py-3 px-4 text-gray-900">
+                  {item.stockLevel ||
+                    (item.current_stock !== undefined &&
+                    item.max_stock !== undefined
+                      ? `${item.current_stock}/${item.max_stock}`
+                      : "N/A")}
+                </td>
                 <td className="py-3 px-4">
                   <span
                     className="px-2 py-1 rounded-lg text-sm font-medium"
