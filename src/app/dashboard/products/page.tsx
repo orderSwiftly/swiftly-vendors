@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
   return (
-    <main className="p-6 max-w-6xl mx-auto">
+    <main className="p-6 max-w-6xl mx-auto pry-ff">
       <ProductsOverviewClient />
     </main>
   );

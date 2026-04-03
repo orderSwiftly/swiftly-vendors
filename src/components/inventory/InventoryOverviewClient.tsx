@@ -57,7 +57,7 @@ export default function InventoryOverviewClient({
   }, []);
 
   return (
-    <main className="p-6 max-w-6xl mx-auto">
+    <main className="p-6 max-w-6xl mx-auto pry-ff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           View Your Inventory
