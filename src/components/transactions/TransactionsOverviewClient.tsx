@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStores } from "@/lib/store";
+import { fetchProductsByStore } from "@/lib/products";
 import Spinner from "../ui/spinner";
 
 interface StoreData {
@@ -17,6 +18,9 @@ export default function TransactionsOverviewClient() {
   const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [productCounts, setProductCounts] = useState<Record<string, number>>(
+    {},
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -28,6 +32,28 @@ export default function TransactionsOverviewClient() {
         if (!mounted) return;
         const list = Array.isArray(data) ? data : data?.data || [];
         setStores(list);
+
+        // Fetch product count for each store
+        const counts: Record<string, number> = {};
+        for (const store of list) {
+          try {
+            const storeId = store._id || store.id;
+            const productData = await fetchProductsByStore(storeId, 1, "");
+            const productList = Array.isArray(productData)
+              ? productData
+              : productData?.data || [];
+            counts[storeId] = productList.length;
+          } catch (err) {
+            console.error(
+              `Failed to fetch products for store ${store.id}:`,
+              err,
+            );
+            counts[store._id || store.id] = 0;
+          }
+        }
+        if (mounted) {
+          setProductCounts(counts);
+        }
       } catch (err: unknown) {
         if (mounted) {
           setError(
@@ -66,6 +92,7 @@ export default function TransactionsOverviewClient() {
           {stores.map((store) => {
             const storeId = store._id || store.id;
             const locations = store.locations || [];
+            const productCount = productCounts[storeId] ?? 0;
             return (
               <button
                 key={storeId}
@@ -99,6 +126,12 @@ export default function TransactionsOverviewClient() {
                     }}
                   >
                     {store.is_active ? "Active" : "Inactive"}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{ backgroundColor: "#FDEDC3", color: "#553F03" }}
+                  >
+                    {productCount} product{productCount !== 1 ? "s" : ""}
                   </span>
                 </div>
               </button>
