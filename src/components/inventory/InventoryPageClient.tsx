@@ -53,34 +53,25 @@ export default function InventoryPageClient({
 
     const loadStoreData = async () => {
       try {
-        const hasToken =
-          typeof window !== "undefined" && !!localStorage.getItem("token");
-        console.log("Has token:", hasToken);
         const response = await getStores();
-        console.log("Store response:", response);
         const stores = Array.isArray(response) ? response : response.data || [];
-        console.log("Parsed stores:", stores);
         const store = stores.find(
           (s: any) => s._id === storeId || s.id === storeId,
         );
-        console.log("Found store:", store);
         if (store) {
           setStoreName(store.store_name || store.name || "Store");
           const storeLocations = (store.locations || []).map((loc: any) => ({
             _id: loc._id || loc.id,
             location_name: loc.location_name || loc.name,
           }));
-          console.log("Normalized store locations:", storeLocations);
           setLocations(storeLocations);
           if (storeLocations.length > 0) {
             setSelectedLocation(storeLocations[0].location_name);
           }
         } else {
-          console.warn(`Store with ID ${storeId} not found in stores list`);
           setStoreNotFound(true);
         }
       } catch (err) {
-        console.error("Failed to fetch store data:", err);
         setStoreNotFound(true);
       } finally {
         setStoreLoading(false);
@@ -108,7 +99,8 @@ export default function InventoryPageClient({
           currentPage,
           searchQuery,
         );
-        setInventoryData(response.data || []);
+        const items = response.data || [];
+        setInventoryData(items);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch inventory",
