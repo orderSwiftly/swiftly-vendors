@@ -34,7 +34,7 @@ export default function StoreCard() {
             setError(null);
             try {
                 const data = await getStores();
-                setStores(Array.isArray(data) ? data : data?.data || []);
+                setStores(data as StoreData[]);
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : "Failed to fetch stores.");
             } finally {

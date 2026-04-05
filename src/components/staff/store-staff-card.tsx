@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import GetStaff from "./get-staff";
-import InviteStaff from "./invite-staff";
 
 interface StoreStaffCardProps {
     storeId: string;
@@ -47,7 +46,6 @@ export default function StoreStaffCard({ storeId }: Readonly<StoreStaffCardProps
                         >
                             View Roles
                         </Link>
-                        <InviteStaff variant="button-only" onInvited={handleInvited} />
                     </div>
                 </div>
 

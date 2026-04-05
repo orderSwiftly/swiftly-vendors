@@ -16,6 +16,8 @@ export interface StaffMember {
     name: string;
     email: string | null;
     access: string | null;
+    role: string | null;
+    store_id?: string | null;
 }
 
 export interface StaffResponse {
@@ -63,6 +65,25 @@ export const getStaffs = async (store_id?: string): Promise<{ staff: StaffMember
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(error.response?.data?.message || 'Failed to fetch staff members.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+// Add this new function to get unassigned staff
+export const getUnassignedStaff = async (): Promise<{ staff: StaffMember[]; total: number }> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        const response = await api.get('/staff', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch unassigned staff.');
         }
         throw new Error('An unexpected error occurred.');
     }

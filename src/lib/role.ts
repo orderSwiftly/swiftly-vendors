@@ -1,0 +1,58 @@
+// src/lib/role.ts
+
+import { api } from "@/utils/api";
+import { AxiosError } from "axios";
+
+export interface Role {
+    id: string;
+    name: string;
+    staff_count: number;
+    permissions: string[];
+}
+
+export interface RoleDetails {
+    id: string;
+    name: string;
+    permissions: string[];
+    staff: {
+        id: string;
+        name: string;
+        email: string | null;
+    }[];
+}
+
+export const getRoles = async (): Promise<Role[]> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        const response = await api.get('/roles', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch roles.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+export const getRoleDetails = async (roleId: string): Promise<RoleDetails> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        const response = await api.get(`/roles/${roleId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch role details.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}

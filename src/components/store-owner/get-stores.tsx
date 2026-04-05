@@ -1,7 +1,7 @@
 // src/components/store-owner/get-stores.tsx
 
 "use client";
-import { getStores, deactivateStore, reactivateStore, deactivateLocation, activateLocation } from "@/lib/store";
+import { getStores, deactivateStore, reactivateStore, deactivateLocation, activateLocation, type Store, type StoreLocation } from "@/lib/store";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import Spinner from "../ui/spinner";
@@ -9,21 +9,6 @@ import { getProfile } from "@/lib/profile";
 import EditStoreNameModal from "./edit-store-name";
 import EditLocationModal from "./edit-location";
 import AddLocationModal from "./add-location-btn";
-
-interface StoreLocation {
-    id: string;
-    name: string;
-    address: string;
-    is_active?: boolean;
-}
-
-interface StoreData {
-    id: string;
-    name: string;
-    address: string;
-    is_active: boolean;
-    locations: StoreLocation[];
-}
 
 interface ProfileData {
     name: string;
@@ -34,11 +19,11 @@ interface GetStoresProps {
 }
 
 export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
-    const [stores, setStores] = useState<StoreData[]>([]);
+    const [stores, setStores] = useState<Store[]>([]);
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [editingStore, setEditingStore] = useState<StoreData | null>(null);
+    const [editingStore, setEditingStore] = useState<Store | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,7 +31,8 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
             setError(null);
             try {
                 const [storesData, profileData] = await Promise.all([getStores(), getProfile()]);
-                setStores(Array.isArray(storesData) ? storesData : storesData?.data || []);
+                // getStores already returns Store[] directly
+                setStores(storesData);
                 setProfile(profileData?.data ?? profileData);
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : "Failed to fetch data.");
@@ -198,7 +184,7 @@ function StoreBlock({
     onDeactivateLocation,
     onActivateLocation,
 }: Readonly<{
-    store: StoreData;
+    store: Store;
     ownerName?: string;
     onEditName: () => void;
     onDeactivate: () => Promise<void>;
@@ -263,7 +249,7 @@ function StoreBlock({
                     storeId={store.id}
                     onClose={() => setAddingLocation(false)}
                     onSuccess={(newLocations) => {
-                        onAddLocationSuccess(newLocations);
+                        onAddLocationSuccess(newLocations.map(loc => ({ ...loc, is_active: loc.is_active ?? true })));
                         setAddingLocation(false);
                     }}
                 />

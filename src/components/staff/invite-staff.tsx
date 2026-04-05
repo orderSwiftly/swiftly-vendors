@@ -1,265 +1,254 @@
+// src/components/staff/invite-staff.tsx
+
 "use client";
 
 import { useState } from "react";
-import { UserPlus, X, Mail, User, Loader2, Plus, Trash2, Lightbulb } from "lucide-react";
+import { UserPlus, X, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { inviteStaff } from "@/lib/staff";
+import { inviteStaff, type InviteStaffBody } from "@/lib/staff";
 
 interface InviteStaffProps {
-  onInvited?: () => void;
-  variant?: "empty-state" | "button-only";
+    storeId?: string;
+    variant?: "button-only" | "button-with-text" | "full";
+    onInvited?: () => void;
 }
 
-interface PersonForm {
-  first_name: string;
-  last_name: string;
-  email: string;
+interface StaffInvite {
+    first_name: string;
+    last_name: string;
+    email: string;
 }
 
-const emptyPerson = (): PersonForm => ({ first_name: "", last_name: "", email: "" });
+export default function InviteStaff({ storeId, variant = "button-only", onInvited }: Readonly<InviteStaffProps>) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [staffList, setStaffList] = useState<StaffInvite[]>([
+        { first_name: "", last_name: "", email: "" }
+    ]);
+    const [loading, setLoading] = useState(false);
 
-export default function InviteStaff({
-  onInvited,
-  variant = "empty-state",
-}: Readonly<InviteStaffProps>) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [people, setPeople] = useState<PersonForm[]>([emptyPerson()]);
+    const handleAddStaff = () => {
+        setStaffList([...staffList, { first_name: "", last_name: "", email: "" }]);
+    };
 
-  const handleChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    setPeople((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, [e.target.name]: e.target.value } : p))
-    );
-  };
+    const handleRemoveStaff = (index: number) => {
+        if (staffList.length === 1) {
+            toast.error("You need at least one staff member to invite");
+            return;
+        }
+        setStaffList(staffList.filter((_, i) => i !== index));
+    };
 
-  const addPerson = () => setPeople((prev) => [...prev, emptyPerson()]);
+    const handleStaffChange = (index: number, field: keyof StaffInvite, value: string) => {
+        const updated = [...staffList];
+        updated[index][field] = value;
+        setStaffList(updated);
+    };
 
-  const removePerson = (index: number) => {
-    setPeople((prev) => prev.filter((_, i) => i !== index));
-  };
+    const handleInvite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // Validate all entries
+        const invalidEntries = staffList.filter(
+            s => !s.first_name.trim() || !s.last_name.trim() || !s.email.trim()
+        );
+        
+        if (invalidEntries.length > 0) {
+            toast.error("Please fill in all fields (first name, last name, and email) for each staff member");
+            return;
+        }
 
-  const handleSubmit = async () => {
-    const valid = people.every(
-      (p) => p.first_name.trim() && p.last_name.trim() && p.email.trim()
-    );
-    if (!valid) {
-      toast.error("Please fill in all fields for every person.");
-      return;
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const invalidEmails = staffList.filter(s => !emailRegex.test(s.email.trim()));
+        if (invalidEmails.length > 0) {
+            toast.error("Please enter valid email addresses for all staff members");
+            return;
+        }
+
+        if (!storeId) {
+            toast.error("Please select a store first");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) throw new Error("No token found");
+
+            const inviteData: InviteStaffBody[] = staffList.map(s => ({
+                first_name: s.first_name.trim(),
+                last_name: s.last_name.trim(),
+                email: s.email.trim()
+            }));
+
+            const response = await inviteStaff(inviteData);
+            
+            toast.success(`${response.invited} staff member${response.invited !== 1 ? "s" : ""} invited successfully!`);
+            setStaffList([{ first_name: "", last_name: "", email: "" }]);
+            setIsOpen(false);
+            onInvited?.();
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : "Failed to invite staff members.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getButtonContent = () => {
+        switch (variant) {
+            case "button-with-text":
+                return (
+                    <>
+                        <UserPlus size={16} />
+                        <span>Invite Staff</span>
+                    </>
+                );
+            case "full":
+                return (
+                    <div className="flex flex-col items-center gap-3">
+                        <UserPlus size={32} className="text-(--pry-clr)" />
+                        <span className="text-sm font-medium">Invite Staff Members</span>
+                        <span className="text-xs text-(--pry-clr)/50">
+                            Send invitations to your team
+                        </span>
+                    </div>
+                );
+            default:
+                return <UserPlus size={18} />;
+        }
+    };
+
+    // For staff-card.tsx which doesn't have storeId yet
+    if (!storeId && variant !== "full") {
+        return (
+            <button
+                onClick={() => toast.error("Please select a store first")}
+                className="p-2 bg-(--pry-clr)/10 text-(--pry-clr) rounded-lg hover:bg-(--pry-clr)/20 transition-colors"
+            >
+                <UserPlus size={18} />
+            </button>
+        );
     }
 
-    setLoading(true);
-    try {
-      const result = await inviteStaff(
-        people.map((p) => ({
-          first_name: p.first_name.trim(),
-          last_name: p.last_name.trim(),
-          email: p.email.trim(),
-        }))
-      );
-      toast.success(`${result.invited} invite${result.invited !== 1 ? "s" : ""} sent.`);
-      setPeople([emptyPerson()]);
-      setOpen(false);
-      onInvited?.();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send invites.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    return (
+        <>
+            <button
+                onClick={() => setIsOpen(true)}
+                className={`flex items-center gap-2 ${
+                    variant === "full"
+                        ? "w-full flex-col p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-(--pry-clr)/30 hover:bg-(--pry-clr)/5 transition-all"
+                        : variant === "button-with-text"
+                        ? "px-4 py-2 bg-(--pry-clr) text-white rounded-lg hover:bg-(--pry-clr)/90 transition-colors text-sm font-medium"
+                        : "p-2 bg-(--pry-clr)/10 text-(--pry-clr) rounded-lg hover:bg-(--pry-clr)/20 transition-colors"
+                }`}
+            >
+                {getButtonContent()}
+            </button>
 
-  const handleClose = () => {
-    if (loading) return;
-    setPeople([emptyPerson()]);
-    setOpen(false);
-  };
+            {isOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto sec-ff">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-(--pry-clr) sec-ff">Invite Staff Members</h3>
+                                <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">
+                                    Add multiple staff members at once
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
 
-  return (
-    <>
-      {variant === "empty-state" ? (
-        <div className="flex flex-col items-center justify-center gap-4 py-16 px-6 rounded-2xl border border-dashed border-gray-400 bg-(--sec-clr)">
-          <div className="w-14 h-14 rounded-full bg-(--pry-clr)/10 flex items-center justify-center">
-            <UserPlus size={24} className="text-(--pry-clr)" />
-          </div>
-          <div className="text-center">
-            <p className="font-semibold text-(--pry-clr) sec-ff">No staff members yet</p>
-            <p className="text-sm text-(--pry-clr)/70 mt-1 sec-ff">
-              Invite your first team member to get started.
-            </p>
-          </div>
-          <button
-            onClick={() => setOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--bg-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--pry-clr)/90 transition-colors"
-          >
-            <UserPlus size={16} />
-            Invite Staff
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-(--prof-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--bg-clr) transition-colors cursor-pointer"
-        >
-          <UserPlus size={15} />
-          Invite Staff
-        </button>
-      )}
+                        <form onSubmit={handleInvite} className="space-y-4">
+                            <div className="space-y-3">
+                                {staffList.map((staff, index) => (
+                                    <div key={index} className="flex gap-3 items-start p-4 border border-gray-100 rounded-xl bg-gray-50/30">
+                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-(--pry-clr)/60 sec-ff mb-1">
+                                                    First Name *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={staff.first_name}
+                                                    onChange={(e) => handleStaffChange(index, "first_name", e.target.value)}
+                                                    placeholder="John"
+                                                    required
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-(--pry-clr)/50 focus:border-(--pry-clr) text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-(--pry-clr)/60 sec-ff mb-1">
+                                                    Last Name *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={staff.last_name}
+                                                    onChange={(e) => handleStaffChange(index, "last_name", e.target.value)}
+                                                    placeholder="Doe"
+                                                    required
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-(--pry-clr)/50 focus:border-(--pry-clr) text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-(--pry-clr)/60 sec-ff mb-1">
+                                                    Email *
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    value={staff.email}
+                                                    onChange={(e) => handleStaffChange(index, "email", e.target.value)}
+                                                    placeholder="john@company.com"
+                                                    required
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-(--pry-clr)/50 focus:border-(--pry-clr) text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveStaff(index)}
+                                            className="mt-6 p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
-          onClick={handleClose}
-        >
-          <div
-            className="w-full max-w-lg bg-(--txt-clr) rounded-2xl shadow-2xl p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-(--pry-clr) sec-ff">
-                  Invite Staff
-                </h2>
-                <p className="text-sm text-(--pry-clr)/70 mt-0.5 sec-ff">
-                  Add one or more people to your organisation.
-                </p>
-              </div>
-              <button
-                onClick={handleClose}
-                disabled={loading}
-                className="p-1.5 rounded-lg hover:bg-(--pry-clr)/10 transition-colors text-(--pry-clr) disabled:opacity-50"
-              >
-                <X size={18} />
-              </button>
-            </div>
+                            <button
+                                type="button"
+                                onClick={handleAddStaff}
+                                className="flex items-center gap-2 text-sm font-medium text-(--pry-clr) hover:text-(--pry-clr)/80 transition-colors sec-ff"
+                            >
+                                <Plus size={16} />
+                                Add another staff member
+                            </button>
 
-            {/* People list */}
-            <div className="flex flex-col gap-4">
-              {people.map((person, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50 relative"
-                >
-                  {/* Remove button */}
-                  {people.length > 1 && (
-                    <button
-                      onClick={() => removePerson(index)}
-                      disabled={loading}
-                      className="absolute top-3 right-3 p-1 rounded-md hover:bg-red-50 text-(--pry-clr)/40 hover:text-red-400 transition-colors disabled:opacity-50"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-
-                  <p className="text-xs font-semibold text-(--pry-clr)/50 sec-ff uppercase tracking-wide">
-                    Person {index + 1}
-                  </p>
-
-                  {/* First + Last */}
-                  <div className="flex gap-3">
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <label className="text-xs font-medium text-(--pry-clr) sec-ff">
-                        First Name
-                      </label>
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-(--txt-clr) focus-within:border-(--pry-clr) transition-colors">
-                        <User size={14} className="text-(--pry-clr)/50 shrink-0" />
-                        <input
-                          name="first_name"
-                          type="text"
-                          placeholder="Ayomide"
-                          value={person.first_name}
-                          onChange={(e) => handleChange(index, e)}
-                          disabled={loading}
-                          className="flex-1 bg-transparent text-sm text-(--pry-clr) placeholder:text-(--pry-clr)/40 outline-none sec-ff disabled:opacity-60"
-                        />
-                      </div>
+                            <div className="flex gap-3 pt-4 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 px-4 py-2 bg-(--pry-clr) text-white rounded-lg hover:bg-(--pry-clr)/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {loading && <Loader2 size={16} className="animate-spin" />}
+                                    {loading ? "Sending..." : `Send Invitation${staffList.length > 1 ? "s" : ""}`}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <label className="text-xs font-medium text-(--pry-clr) sec-ff">
-                        Last Name
-                      </label>
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-(--txt-clr) focus-within:border-(--pry-clr) transition-colors">
-                        <User size={14} className="text-(--pry-clr)/50 shrink-0" />
-                        <input
-                          name="last_name"
-                          type="text"
-                          placeholder="Bello"
-                          value={person.last_name}
-                          onChange={(e) => handleChange(index, e)}
-                          disabled={loading}
-                          className="flex-1 bg-transparent text-sm text-(--pry-clr) placeholder:text-(--pry-clr)/40 outline-none sec-ff disabled:opacity-60"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-medium text-(--pry-clr) sec-ff">
-                      Email Address
-                    </label>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-(--txt-clr) focus-within:border-(--pry-clr) transition-colors">
-                      <Mail size={14} className="text-(--pry-clr)/50 shrink-0" />
-                      <input
-                        name="email"
-                        type="email"
-                        placeholder="ayomide@example.com"
-                        value={person.email}
-                        onChange={(e) => handleChange(index, e)}
-                        disabled={loading}
-                        className="flex-1 bg-transparent text-sm text-(--pry-clr) placeholder:text-(--pry-clr)/40 outline-none sec-ff disabled:opacity-60"
-                      />
-                    </div>
-                  </div>
                 </div>
-              ))}
-
-              {/* Add another person */}
-              <button
-                onClick={addPerson}
-                disabled={loading}
-                className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-(--pry-clr)/60 sec-ff hover:border-(--pry-clr)/40 hover:text-(--pry-clr) transition-colors disabled:opacity-50"
-              >
-                <Plus size={15} />
-                Add another person
-              </button>
-            </div>
-
-            {/* Info banner */}
-            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-200">
-              <Lightbulb size={15} className="text-yellow-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-yellow-700 sec-ff leading-relaxed">
-                Each person will receive an email with a temporary password. You&apos;ll assign their role and access from their Staff Profile after they&rsquo;re added.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                onClick={handleClose}
-                disabled={loading}
-                className="flex-1 py-2.5 rounded-xl border border-gray-400 text-sm font-semibold text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/10 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="flex-1 py-2.5 rounded-xl bg-(--bg-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--bg-clr)/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin" />
-                    Sending…
-                  </>
-                ) : (
-                  `Send ${people.length > 1 ? `${people.length} Invites` : "Invite"}`
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+            )}
+        </>
+    );
 }

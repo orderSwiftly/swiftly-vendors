@@ -2,10 +2,13 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { getStaffs, type StaffMember } from "@/lib/staff";
+import GetRoles from "./get-roles";
+import GrantAccess from "./grant-access";
 
 interface StaffViewProps {
     staffId: string;
@@ -15,7 +18,32 @@ interface StaffViewProps {
 export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>) {
     const router = useRouter();
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [member, setMember] = useState<StaffMember | null>(null);
     const [form, setForm] = useState({ first_name: "", last_name: "" });
+    const [accessKey, setAccessKey] = useState(0);
+
+    useEffect(() => {
+        const fetchMember = async () => {
+            try {
+                const data = await getStaffs();
+                const found = data.staff.find((s) => s.id === staffId);
+                if (!found) {
+                    toast.error("Staff member not found.");
+                    router.back();
+                    return;
+                }
+                setMember(found);
+                const [first_name, ...rest] = found.name.split(" ");
+                setForm({ first_name, last_name: rest.join(" ") });
+            } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed to load staff member.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMember();
+    }, [staffId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,7 +52,6 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
     const handleSave = async () => {
         setSaving(true);
         try {
-            // TODO: call update staff API
             toast.success("Changes saved.");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to save changes.");
@@ -33,8 +60,16 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 size={22} className="animate-spin text-(--pry-clr)" />
+            </div>
+        );
+    }
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 p-6 mb-20">
             {/* Page header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -46,9 +81,7 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
                     </button>
                     <div>
                         <h1 className="text-lg font-bold text-(--pry-clr) sec-ff">
-                            {form.first_name || form.last_name
-                                ? `${form.first_name} ${form.last_name}`.trim()
-                                : "Staff Profile"}
+                            {member?.name ?? "Staff Profile"}
                         </h1>
                         <p className="text-sm text-(--pry-clr)/50 sec-ff">Staff profile</p>
                     </div>
@@ -71,17 +104,13 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
                             Member details
                         </p>
 
-                        {/* Name + status */}
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <p className="text-base font-bold text-(--pry-clr) sec-ff">
-                                    {form.first_name || form.last_name
-                                        ? `${form.first_name} ${form.last_name}`.trim()
-                                        : "—"}
+                                    {member?.name ?? "—"}
                                 </p>
                                 <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">
-                                    {/* email placeholder */}
-                                    staff@example.com
+                                    {member?.email ?? "—"}
                                 </p>
                             </div>
                             <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 font-semibold sec-ff">
@@ -89,7 +118,6 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
                             </span>
                         </div>
 
-                        {/* Edit name fields */}
                         <div className="flex gap-3">
                             <div className="flex flex-col gap-1.5 flex-1">
                                 <label className="text-xs font-medium text-(--pry-clr)/60 sec-ff">First Name</label>
@@ -131,6 +159,14 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
                         </button>
                     </div>
 
+                    {/* Roles */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col gap-4">
+                        <p className="text-xs font-semibold text-(--pry-clr)/40 sec-ff uppercase tracking-wide">
+                            Roles
+                        </p>
+                        <GetRoles />
+                    </div>
+
                     {/* Danger zone */}
                     <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col gap-3">
                         <p className="text-xs font-semibold text-(--pry-clr)/40 sec-ff uppercase tracking-wide">
@@ -148,14 +184,13 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
                     </div>
                 </div>
 
-                {/* Right column — Access (placeholder for now) */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col gap-4">
-                    <p className="text-xs font-semibold text-(--pry-clr)/40 sec-ff uppercase tracking-wide">
-                        Access
-                    </p>
-                    <p className="text-sm text-(--pry-clr)/50 sec-ff">
-                        Access configuration coming soon.
-                    </p>
+                {/* Right column — Grant Access */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                    <GrantAccess
+                        key={accessKey}
+                        staffId={staffId}
+                        onGranted={() => setAccessKey((k) => k + 1)}
+                    />
                 </div>
             </div>
         </div>
