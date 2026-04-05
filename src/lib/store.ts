@@ -3,9 +3,11 @@
 import { AxiosError } from "axios";
 import { api } from "@/utils/api";
 
-interface StoreLocation {
-  name: string;
-  address: string;
+export interface StoreLocation {
+    id: string;
+    name: string;
+    address: string;
+    is_active: boolean;
 }
 
 interface CreateStoreBody {
@@ -25,6 +27,13 @@ interface EditLocationBody {
 interface AddLocationBody {
   name: string;
   address: string;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  is_active: boolean;
+  locations: StoreLocation[];
 }
 
 export const createStore = async (storeData: CreateStoreBody) => {
@@ -48,12 +57,13 @@ export const createStore = async (storeData: CreateStoreBody) => {
   }
 };
 
-export const getStores = async () => {
+// update getStores return type
+export const getStores = async (): Promise<Store[]> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token found");
 
-    const response = await api.get("/stores", {
+    const response = await api.get<Store[]>("/stores", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

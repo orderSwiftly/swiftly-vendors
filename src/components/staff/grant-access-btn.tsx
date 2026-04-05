@@ -24,6 +24,7 @@ interface Store {
 interface GrantAccessBtnProps {
   staffId: string;
   staffName: string;
+  storeId?: string;
   onGranted?: () => void;
 }
 
@@ -32,6 +33,7 @@ const LEVELS = ["Organization", "Store", "Location"];
 export default function GrantAccessBtn({
   staffId,
   staffName,
+  storeId: preselectedStoreId,
   onGranted,
 }: Readonly<GrantAccessBtnProps>) {
   const [open, setOpen] = useState(false);
@@ -52,6 +54,7 @@ export default function GrantAccessBtn({
       const [storeData, roleData] = await Promise.all([getStores(), getRoles()]);
       setStores(storeData as Store[]);
       setRoles(roleData);
+      if (preselectedStoreId) setStoreId(preselectedStoreId);
     } catch {
       toast.error("Failed to load stores or roles.");
       setOpen(false);
@@ -165,7 +168,7 @@ export default function GrantAccessBtn({
                     <select
                       value={storeId}
                       onChange={(e) => setStoreId(e.target.value)}
-                      disabled={loading}
+                      disabled={loading || !!preselectedStoreId}
                       className="w-full appearance-none px-3.5 py-2.5 rounded-xl border border-gray-400 bg-(--txt-clr) text-sm text-(--pry-clr) sec-ff focus:outline-none focus:border-(--pry-clr) transition-colors disabled:opacity-60 pr-9"
                     >
                       <option value="" disabled>Select store</option>
@@ -177,7 +180,7 @@ export default function GrantAccessBtn({
                   </div>
                 </div>
 
-                {/* Role — single select as enum chips */}
+                {/* Role */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-(--pry-clr) sec-ff">
                     Role
