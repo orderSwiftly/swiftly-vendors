@@ -2,7 +2,7 @@ import ProcessDashboard from '@/components/process-sales/dashboard'
 
 export default function ProcessSalePage() {
     return (
-        <main className='flex flex-col items-start w-full justify-center'>
+        <main className='flex flex-col items-start w-full justify-center mb-20'>
             <ProcessDashboard />
         </main>
     )

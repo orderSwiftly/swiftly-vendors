@@ -184,7 +184,7 @@ export default function ProcessSale({ onBack }: Readonly<{ onBack?: () => void }
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-9 pr-8 py-2 rounded-lg border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors placeholder:text-gray-400 bg-gray-50"
+                                className="w-full pl-9 pr-8 py-2 rounded-lg border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--prof-clr) transition-colors placeholder:text-gray-400 bg-gray-50"
                             />
                             {search && (
                                 <button

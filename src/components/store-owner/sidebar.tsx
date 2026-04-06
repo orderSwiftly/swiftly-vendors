@@ -34,7 +34,7 @@ const navItems = [
     // { label: 'Transactions',       href: '/dashboard/transactions',   icon: BarChart3 },
     // { label: 'Reports',            href: '/dashboard/reports',        icon: FileText },
     // { label: 'Audit Log',          href: '/dashboard/audit-log',      icon: ClipboardList },
-    { label: 'Process Sale',            href: '/dashboard/process-sale',        icon: CreditCard },
+    // { label: 'Process Sale',            href: '/dashboard/process-sale',        icon: CreditCard },
 ];
 
 export default function Sidebar() {
@@ -118,16 +118,18 @@ export default function Sidebar() {
                                     collapsed ? 'justify-center px-2' : 'gap-3 px-3'
                                 } py-2.5 rounded-lg transition-all duration-150 group relative ${
                                     isActive
-                                        ? 'text-(--bg-clr)'
+                                        ? 'bg-(--acc-clr)/15 text-(--pry-clr)'
                                         : 'text-(--sec-clr) hover:text-(--pry-clr) hover:bg-gray-50'
                                 }`}
                             >
                                 {isActive && !collapsed && (
                                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-(--acc-clr)" />
                                 )}
-                                <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-(--bg-clr)' : 'text-(--sec-clr) group-hover:text-(--pry-clr)'}`} />
+                                <Icon className={`w-[18px] h-[18px] shrink-0 ${
+                                    isActive ? 'text-(--pry-clr)' : 'text-(--sec-clr) group-hover:text-(--pry-clr)'
+                                }`} />
                                 {!collapsed && (
-                                    <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`} style={{ fontFamily: 'var(--sec-ff)' }}>
+                                    <span className={`text-sm ${isActive ? 'font-semibold text-(--pry-clr)' : 'font-medium'}`} style={{ fontFamily: 'var(--sec-ff)' }}>
                                         {label}
                                     </span>
                                 )}
@@ -197,11 +199,17 @@ export default function Sidebar() {
                                 key={href}
                                 href={href}
                                 className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all duration-200 ${
-                                    isActive ? 'text-(--bg-clr)' : 'text-(--sec-clr)'
+                                    isActive
+                                        ? 'text-(--pry-clr)'
+                                        : 'text-(--sec-clr)'
                                 }`}
                             >
-                                <Icon className="w-5 h-5" />
-                                <span className="text-[10px] font-medium" style={{ fontFamily: 'var(--sec-ff)' }}>
+                                <div className={`p-1.5 rounded-lg transition-all duration-200 ${
+                                    isActive ? 'bg-(--acc-clr)/20' : ''
+                                }`}>
+                                    <Icon className="w-5 h-5" />
+                                </div>
+                                <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`} style={{ fontFamily: 'var(--sec-ff)' }}>
                                     {label.split(' ')[0]}
                                 </span>
                             </Link>

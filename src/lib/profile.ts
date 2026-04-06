@@ -2,7 +2,16 @@
 import { AxiosError } from "axios";
 import { api } from "@/utils/api";
 
-export const getProfile = async () => {
+export interface Profile {
+    first_name: string;
+    last_name: string;
+    email: string;
+    name: string;
+    is_owner: boolean;
+    permissions: string[];
+}
+
+export const getProfile = async (): Promise<Profile> => {
     try {
         const token = localStorage.getItem('token');
         const response = await api.get('/profile', {
