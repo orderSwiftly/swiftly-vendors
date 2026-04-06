@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
                     </button>
 
                     <Link
-                        href="/auth/login"
+                        href="/auth"
                         className="text-xs text-center text-gray-400 hover:text-gray-600 transition-colors"
                     >
                         Back to login

@@ -94,13 +94,13 @@ export const editProduct = async (
 // upload product
 export const uploadProductImage = async (
     productId: string,
-    file: File,
+    files: File[],
 ): Promise<void> => {
     try {
         const token = localStorage.getItem("token");
         const formData = new FormData();
-        formData.append("photo", file);
-        const response = await api.post(`/products/${productId}/images`, formData, {
+        files.forEach((file) => formData.append("photo", file));
+        const response = await api.patch(`/products/${productId}/images`, formData, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "multipart/form-data",

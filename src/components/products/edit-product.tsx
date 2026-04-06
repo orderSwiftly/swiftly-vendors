@@ -7,16 +7,24 @@ import { X, Loader2, Package, Tag, DollarSign, Hash, Pencil, ImagePlus, Trash2 }
 import { toast } from "sonner";
 import { editProduct, uploadProductImage, type ProductInput, type Product } from "@/lib/products";
 
+const MAX_IMAGES = 3;
+const MAX_SIZE_MB = 2.5;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
 interface EditProductProps {
     product: Product;
     onEdited?: () => void;
 }
 
+interface ImagePreview {
+    file: File;
+    preview: string;
+}
+
 export default function EditProduct({ product, onEdited }: Readonly<EditProductProps>) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [newImages, setNewImages] = useState<ImagePreview[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState<ProductInput>({
@@ -46,22 +54,47 @@ export default function EditProduct({ product, onEdited }: Readonly<EditProductP
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        const files = Array.from(e.target.files ?? []);
+        if (!files.length) return;
+
+        const remaining = MAX_IMAGES - newImages.length;
+        if (remaining <= 0) {
+            toast.error(`You can only upload up to ${MAX_IMAGES} images.`);
+            return;
+        }
+
+        const toAdd = files.slice(0, remaining);
+        const valid: ImagePreview[] = [];
+
+        for (const file of toAdd) {
+            if (file.size > MAX_SIZE_BYTES) {
+                toast.error(`${file.name} exceeds the ${MAX_SIZE_MB}MB limit.`);
+                continue;
+            }
+            valid.push({ file, preview: URL.createObjectURL(file) });
+        }
+
+        if (files.length > remaining) {
+            toast.warning(`Only ${remaining} image${remaining !== 1 ? "s" : ""} added — max of ${MAX_IMAGES} reached.`);
+        }
+
+        setNewImages((prev) => [...prev, ...valid]);
+
+        // Reset input so the same file can be re-selected if removed
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const handleRemoveImage = () => {
-        setImageFile(null);
-        setImagePreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+    const removeNewImage = (index: number) => {
+        setNewImages((prev) => {
+            URL.revokeObjectURL(prev[index].preview);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleClose = () => {
         setOpen(false);
-        setImageFile(null);
-        setImagePreview(null);
+        newImages.forEach((img) => URL.revokeObjectURL(img.preview));
+        setNewImages([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -74,12 +107,12 @@ export default function EditProduct({ product, onEdited }: Readonly<EditProductP
         try {
             setLoading(true);
 
-            // Run edit and image upload in parallel if there's an image
             const tasks: Promise<void>[] = [
                 editProduct(product.id, { ...form, price: Number(form.price) }),
             ];
-            if (imageFile) {
-                tasks.push(uploadProductImage(product.id, imageFile));
+
+            if (newImages.length > 0) {
+                tasks.push(uploadProductImage(product.id, newImages.map((img) => img.file)));
             }
 
             await Promise.all(tasks);
@@ -94,8 +127,8 @@ export default function EditProduct({ product, onEdited }: Readonly<EditProductP
         }
     };
 
-    // Current image to show as existing (first image from product)
-    const existingImage = product.images_url?.[0];
+    const existingImages = product.images_url ?? [];
+    const canAddMore = newImages.length < MAX_IMAGES;
 
     return (
         <>
@@ -131,51 +164,70 @@ export default function EditProduct({ product, onEdited }: Readonly<EditProductP
                         </div>
 
                         {/* Image Upload */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold text-(--pry-clr)/70 sec-ff flex items-center gap-1.5">
-                                <ImagePlus size={12} />
-                                Product Image
-                            </label>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-semibold text-(--pry-clr)/70 sec-ff flex items-center gap-1.5">
+                                    <ImagePlus size={12} />
+                                    Product Images
+                                </label>
+                                <span className="text-xs text-(--pry-clr)/40 sec-ff">
+                                    {newImages.length}/{MAX_IMAGES} new · max {MAX_SIZE_MB}MB each
+                                </span>
+                            </div>
 
-                            {/* Preview */}
-                            {(imagePreview || existingImage) && (
-                                <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gray-200">
-                                    <img
-                                        src={imagePreview ?? existingImage}
-                                        alt="Product preview"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    {imagePreview && (
-                                        <button
-                                            onClick={handleRemoveImage}
-                                            className="absolute top-2 right-2 p-1.5 bg-white rounded-lg shadow border border-gray-200 hover:bg-red-50 transition-colors"
-                                        >
-                                            <Trash2 size={13} className="text-red-400" />
-                                        </button>
-                                    )}
-                                    {imagePreview && (
-                                        <span className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-white/90 rounded-md sec-ff text-(--pry-clr)/60 border border-gray-200">
-                                            New image selected
-                                        </span>
-                                    )}
+                            {/* Existing images */}
+                            {existingImages.length > 0 && (
+                                <div className="flex flex-col gap-1.5">
+                                    <p className="text-xs text-(--pry-clr)/40 sec-ff">Current images</p>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {existingImages.map((url, i) => (
+                                            <div key={i} className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shrink-0">
+                                                <img src={url} alt={`Product image ${i + 1}`} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
+                            {/* New images preview */}
+                            {newImages.length > 0 && (
+                                <div className="flex flex-col gap-1.5">
+                                    <p className="text-xs text-(--pry-clr)/40 sec-ff">New images to upload</p>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {newImages.map((img, i) => (
+                                            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-(--pry-clr)/30 shrink-0">
+                                                <img src={img.preview} alt={`New image ${i + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    onClick={() => removeNewImage(i)}
+                                                    className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow border border-gray-200 hover:bg-red-50 transition-colors"
+                                                >
+                                                    <Trash2 size={10} className="text-red-400" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Upload button */}
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
+                                multiple
                                 onChange={handleImageChange}
                                 className="hidden"
                             />
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="w-full px-3 py-2.5 rounded-xl border border-dashed border-gray-300 text-sm text-(--pry-clr)/50 sec-ff hover:border-(--pry-clr) hover:text-(--pry-clr) transition-colors flex items-center justify-center gap-2"
-                            >
-                                <ImagePlus size={14} />
-                                {existingImage ? "Replace image" : "Upload image"}
-                            </button>
+                            {canAddMore && (
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full px-3 py-2.5 rounded-xl border border-dashed border-gray-300 text-sm text-(--pry-clr)/50 sec-ff hover:border-(--pry-clr) hover:text-(--pry-clr) transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <ImagePlus size={14} />
+                                    {newImages.length === 0 ? "Upload images" : `Add more (${MAX_IMAGES - newImages.length} left)`}
+                                </button>
+                            )}
                         </div>
 
                         {/* Fields */}
