@@ -102,3 +102,20 @@ export const ALL_PERMISSIONS = [
     "inventory__inflow",
     "sales__process",
 ] as const;
+
+export const revokeRole = async (roleId: string): Promise<void> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        const response = await api.delete(`/roles/${roleId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to revoke role.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+};

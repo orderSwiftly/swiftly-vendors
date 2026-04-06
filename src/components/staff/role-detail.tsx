@@ -1,4 +1,4 @@
-// src/components/staff/role-detail.tsx
+// src/components/staff/role-detail.tsx (updated)
 
 "use client";
 
@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Users, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { getRoleDetails, type Role, type RoleDetails, ALL_PERMISSIONS } from "@/lib/role";
+import RevokeRoleModal from "./revoke-role-modal";
 
 const PERMISSION_LABELS: Record<string, { label: string; description: string }> = {
     "organization__manage": { label: "Manage Organization", description: "Full control over organization settings" },
@@ -31,6 +32,10 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
     const [name, setName] = useState(role.name);
     const [selected, setSelected] = useState<Set<string>>(new Set(role.permissions));
     const [saving, setSaving] = useState(false);
+    
+    // Revoke modal state
+    const [revokeModalOpen, setRevokeModalOpen] = useState(false);
+    const [selectedStaff, setSelectedStaff] = useState<{ id: string; name: string } | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -68,6 +73,22 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
         }
     };
 
+    const handleRevokeClick = (staffId: string, staffName: string) => {
+        setSelectedStaff({ id: staffId, name: staffName });
+        setRevokeModalOpen(true);
+    };
+
+    const handleRevokeSuccess = () => {
+        // Refresh role details after revoke
+        getRoleDetails(role.id)
+            .then((data) => {
+                setDetail(data);
+                setName(data.name);
+                setSelected(new Set(data.permissions));
+            })
+            .catch((err: Error) => toast.error(err.message));
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-10">
@@ -76,8 +97,29 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
         );
     }
 
+    // Get permissions that will be removed (current role permissions)
+    const permissionsToRemove = role.permissions.map(perm => 
+        PERMISSION_LABELS[perm]?.label || perm
+    );
+
     return (
         <div className="flex flex-col gap-6 mb-20">
+            {/* Revoke Modal */}
+            {selectedStaff && (
+                <RevokeRoleModal
+                    isOpen={revokeModalOpen}
+                    onClose={() => {
+                        setRevokeModalOpen(false);
+                        setSelectedStaff(null);
+                    }}
+                    onSuccess={handleRevokeSuccess}
+                    roleId={role.id}
+                    roleName={role.name}
+                    staffName={selectedStaff.name}
+                    permissionsToRemove={role.permissions}
+                />
+            )}
+
             {/* Staff assigned */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -110,6 +152,12 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                                     <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{member.name}</p>
                                 </div>
                                 <span className="text-xs text-(--pry-clr)/50 sec-ff">{member.access_summary}</span>
+                                <button 
+                                    onClick={() => handleRevokeClick(member.id, member.name)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-(--pry-clr) text-sm font-semibold sec-ff hover:bg-(--pry-clr)/5 transition-colors cursor-pointer"
+                                >
+                                    Revoke
+                                </button>
                             </div>
                         ))}
                     </div>
