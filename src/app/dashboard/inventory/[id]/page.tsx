@@ -1,3 +1,5 @@
+// src/app/dashboard/inventory/[id]/page.tsx
+
 import type { Metadata } from "next";
 import InventoryPageClient from "@/components/inventory/InventoryPageClient";
 
@@ -9,7 +11,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function StoreInventoryPage({ params }: Props) {
+export default async function StoreInventoryPage({ params }: Readonly<Props>) {
   const { id } = await params;
 
   return (
