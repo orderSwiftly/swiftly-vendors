@@ -127,14 +127,14 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors bg-white"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors bg-(--txt-clr)"
                 />
             </div>
 
             {/* Permissions */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-center bg-yellow-200 border border-yellow-500 sec-ff text-yellow-700 p-6 rounded-lg">
-                    Changes apply immediately, to all {detail?.staff.length ?? 0} staff with this role.
+                    Changes apply immediately to all {detail?.staff.length ?? 0} staff with this role.
                 </div>
                 <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-(--pry-clr)/60 sec-ff uppercase tracking-wide">
@@ -164,8 +164,8 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                                     </p>
                                     <p className="text-xs text-(--pry-clr)/40 sec-ff mt-0.5">{description}</p>
                                 </div>
-                                <div className={`w-9 h-5 rounded-full transition-colors shrink-0 relative ${checked ? "bg-(--bg-clr)" : "bg-gray-200"}`}>
-                                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${checked ? "left-4" : "left-0.5"}`} />
+                                <div className={`w-9 h-5 rounded-full transition-colors shrink-0 relative ${checked ? "bg-(--prof-clr)" : "bg-gray-200"}`}>
+                                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-(--txt-clr) shadow-sm transition-all ${checked ? "left-4" : "left-0.5"}`} />
                                 </div>
                             </button>
                         );
