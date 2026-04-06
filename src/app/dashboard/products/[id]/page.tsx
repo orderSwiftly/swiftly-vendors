@@ -1,3 +1,5 @@
+// src/app/dashboard/products/[id]/page.tsx
+
 import type { Metadata } from "next";
 import ProductsPageClient from "@/components/products/ProductsPageClient";
 
@@ -9,7 +11,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function ProductViewPage({ params }: Props) {
+export default async function ProductViewPage({ params }: Readonly<Props>) {
   const { id } = await params;
 
   return (

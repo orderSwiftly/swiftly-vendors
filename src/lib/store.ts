@@ -32,6 +32,7 @@ interface AddLocationBody {
 export interface Store {
   id: string;
   name: string;
+  store_name?: string;
   is_active: boolean;
   locations: StoreLocation[];
 }

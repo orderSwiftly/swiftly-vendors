@@ -1,18 +1,22 @@
+// src/components/products/ProductsOverviewClient.tsx
+
 "use client";
 import { useEffect, useState } from "react";
 import { getStores } from "@/lib/store";
+import type { StoreLocation } from "@/lib/store";
 import { fetchProductsByStore } from "@/lib/products";
 import { useRouter } from "next/navigation";
-import Spinner from "../ui/spinner";
+import {  Loader2 } from "lucide-react";
+
 
 interface StoreData {
-  id: string;
-  _id?: string;
-  name: string;
-  store_name?: string;
-  is_active: boolean;
-  locations?: Array<any>;
-  products_count?: number;
+    id: string;
+    _id?: string;
+    name: string;
+    store_name?: string;
+    is_active: boolean;
+    locations?: StoreLocation[];
+    products_count?: number;
 }
 
 export default function ProductsOverviewClient() {
@@ -32,15 +36,16 @@ export default function ProductsOverviewClient() {
         const data = await getStores();
         if (!mounted) return;
         // normalize response
-        const list = Array.isArray(data) ? data : data?.data || [];
+        const list = data;
         setStores(list);
 
         // Fetch product count for each store
         const counts: Record<string, number> = {};
         for (const store of list) {
           try {
-            const storeId = store._id || store.id;
+            const storeId = store.id;
             const productData = await fetchProductsByStore(storeId, 1, "");
+            counts[storeId] = productData.total;
             const productList = Array.isArray(productData)
               ? productData
               : productData?.data || [];
@@ -50,7 +55,7 @@ export default function ProductsOverviewClient() {
               `Failed to fetch products for store ${store.id}:`,
               err,
             );
-            counts[store._id || store.id] = 0;
+            counts[store.id] = 0;
           }
         }
         if (mounted) {
@@ -80,8 +85,8 @@ export default function ProductsOverviewClient() {
       </p>
 
       {loading ? (
-        <div className="py-10 text-gray-500">
-          <Spinner />
+        <div className="py-10 flex items-center justify-center w-full">
+          <Loader2 className="animate-spin" />
         </div>
       ) : error ? (
         <div className="text-red-500">{error}</div>
