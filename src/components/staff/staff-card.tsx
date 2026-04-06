@@ -33,7 +33,7 @@ export default function StaffCard() {
     }, []);
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 mb-20">
             <div className="rounded-2xl bg-(--txt-clr) p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

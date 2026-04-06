@@ -122,6 +122,7 @@ export default function Sidebar() {
                                         : 'text-(--sec-clr) hover:text-(--pry-clr) hover:bg-gray-50'
                                 }`}
                             >
+                                {/* Left bar indicator */}
                                 {isActive && !collapsed && (
                                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-(--acc-clr)" />
                                 )}
@@ -145,7 +146,6 @@ export default function Sidebar() {
 
                 {/* User + Logout */}
                 <div className="p-3 border-t border-(--sec-clr) space-y-1">
-                    {/* User info */}
                     <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 px-3'} py-2`}>
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-(--acc-clr) flex items-center justify-center font-semibold text-(--pry-clr) text-sm shrink-0">
                             {profile?.photo ? (
@@ -167,7 +167,6 @@ export default function Sidebar() {
                         )}
                     </div>
 
-                    {/* Logout button */}
                     <button
                         onClick={handleLogout}
                         className={`flex items-center ${
@@ -198,10 +197,8 @@ export default function Sidebar() {
                             <Link
                                 key={href}
                                 href={href}
-                                className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all duration-200 ${
-                                    isActive
-                                        ? 'text-(--pry-clr)'
-                                        : 'text-(--sec-clr)'
+                                className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 ${
+                                    isActive ? 'text-(--pry-clr)' : 'text-(--sec-clr)'
                                 }`}
                             >
                                 <div className={`p-1.5 rounded-lg transition-all duration-200 ${

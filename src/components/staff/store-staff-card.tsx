@@ -43,7 +43,7 @@ export default function StoreStaffCard({ storeId }: Readonly<StoreStaffCardProps
     };
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 mb-20">
             <div className="rounded-2xl bg-(--txt-clr) p-6 flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-4">

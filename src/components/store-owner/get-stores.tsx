@@ -33,7 +33,7 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                 const [storesData, profileData] = await Promise.all([getStores(), getProfile()]);
                 // getStores already returns Store[] directly
                 setStores(storesData);
-                setProfile(profileData?.data ?? profileData);
+                setProfile(profileData);
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : "Failed to fetch data.");
             } finally {
