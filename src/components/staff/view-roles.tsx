@@ -3,9 +3,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Briefcase, Users } from "lucide-react";
+import { Loader2, Briefcase, Users, ChevronRight } from "lucide-react";
 import { getRoles, type Role } from "@/lib/role";
 import { toast } from "sonner";
+import RoleDetail from "./role-detail";
 
 const PERMISSION_LABELS: Record<string, string> = {
     "organization__manage": "Manage Organization",
@@ -20,7 +21,11 @@ const PERMISSION_LABELS: Record<string, string> = {
     "sales__process": "Process Sales",
 };
 
-export default function ViewRoles() {
+interface ViewRolesProps {
+    onSelectRole: (role: Role) => void;
+}
+
+export default function ViewRoles({ onSelectRole }: Readonly<ViewRolesProps>) {
     const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -50,9 +55,10 @@ export default function ViewRoles() {
     return (
         <div className="flex flex-col gap-3">
             {roles.map((role) => (
-                <div
+                <button
                     key={role.id}
-                    className="rounded-xl border border-gray-100 p-4 flex flex-col gap-3"
+                    onClick={() => onSelectRole(role)}
+                    className="rounded-xl border border-gray-100 p-4 flex flex-col gap-3 text-left hover:border-(--pry-clr)/20 hover:bg-(--pry-clr)/3 transition-colors group"
                 >
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
@@ -61,9 +67,12 @@ export default function ViewRoles() {
                             </div>
                             <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{role.name}</p>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-(--prof-clr) sec-ff bg-(--acc-clr)/20 px-2 py-1 rounded-full">
-                            <Users size={12} />
-                            {role.staff_count} staff
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-xs text-(--prof-clr) sec-ff bg-(--acc-clr)/20 px-2 py-1 rounded-full">
+                                <Users size={12} />
+                                {role.staff_count} staff
+                            </div>
+                            <ChevronRight size={15} className="text-(--pry-clr)/30 group-hover:text-(--pry-clr)/60 transition-colors" />
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -76,7 +85,7 @@ export default function ViewRoles() {
                             </span>
                         ))}
                     </div>
-                </div>
+                </button>
             ))}
         </div>
     );

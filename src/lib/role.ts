@@ -18,6 +18,7 @@ export interface RoleDetails {
         id: string;
         name: string;
         email: string | null;
+        access_summary: string;
     }[];
 }
 
