@@ -21,6 +21,11 @@ export interface RoleDetails {
     }[];
 }
 
+export interface CreateRoleBody {
+    name: string;
+    permissions: string[];
+}
+
 export const getRoles = async (): Promise<Role[]> => {
     try {
         const token = localStorage.getItem('token');
@@ -56,3 +61,43 @@ export const getRoleDetails = async (roleId: string): Promise<RoleDetails> => {
         throw new Error('An unexpected error occurred.');
     }
 }
+
+export const createRole = async (body: CreateRoleBody): Promise<Role> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        // API expects permissions as an object with boolean values
+        const permissionsObj = ALL_PERMISSIONS.reduce((acc, perm) => {
+            acc[perm] = body.permissions.includes(perm);
+            return acc;
+        }, {} as Record<string, boolean>);
+
+        const response = await api.post('/roles', {
+            name: body.name,
+            permissions: permissionsObj,
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to create role.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+export const ALL_PERMISSIONS = [
+    "organization__manage",
+    "store__manage",
+    "location__manage",
+    "product__manage",
+    "product__list",
+    "staff__manage",
+    "inventory__adjust",
+    "inventory__view",
+    "inventory__inflow",
+    "sales__process",
+] as const;
