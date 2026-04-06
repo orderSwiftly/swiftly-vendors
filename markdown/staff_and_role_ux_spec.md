@@ -1,4 +1,4 @@
-# Swiftly IIMS — UI/UX Specification (Supplement)
+# Swiftly IMS — UI/UX Specification (Supplement)
 ---
 ## 5. Staff & Roles
 

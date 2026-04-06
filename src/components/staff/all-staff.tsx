@@ -8,6 +8,7 @@ import { Loader2, Mail, Key, X, Eye, Briefcase, Users, UserMinus, Search, UserX,
 import { toast } from "sonner";
 import { getStaffs, type StaffMember } from "@/lib/staff";
 import InviteStaff from "./invite-staff";
+import GetDismissedStaff from "./get-dismissed-staff";
 
 type FilterTab = "all" | "unassigned" | "dismissed";
 
@@ -57,7 +58,6 @@ export default function AllStaff() {
     const filteredStaff = useMemo(() => {
         let list = staff;
         if (activeFilter === "unassigned") list = list.filter((m) => !m.role);
-        else if (activeFilter === "dismissed") list = list.filter((m) => m.dismissed);
         if (search.trim()) {
             const q = search.toLowerCase();
             list = list.filter(
@@ -70,7 +70,6 @@ export default function AllStaff() {
     const activeOption = FILTER_OPTIONS.find((o) => o.key === activeFilter)!;
 
     const emptyMessage = () => {
-        if (activeFilter === "dismissed") return "No dismissed staff.";
         if (activeFilter === "unassigned") return "All staff members have roles assigned.";
         if (search) return `No staff match "${search}".`;
         return null;
@@ -136,7 +135,9 @@ export default function AllStaff() {
             </div>
 
             {/* Content */}
-            {loading ? (
+            {activeFilter === "dismissed" ? (
+                <GetDismissedStaff />
+            ) : loading ? (
                 <div className="flex items-center justify-center py-10">
                     <Loader2 size={22} className="animate-spin text-(--pry-clr)" />
                 </div>

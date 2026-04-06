@@ -181,7 +181,7 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
         </div>
         <button
             onClick={() => setDismissOpen(true)}
-            className="px-4 py-2 rounded-xl border border-red-300 text-sm font-semibold text-red-500 sec-ff hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl border border-red-300 bg-red-600 text-sm font-semibold text-(--txt-clr) sec-ff hover:bg-red-700 transition-colors cursor-pointer"
         >
             Dismiss
         </button>

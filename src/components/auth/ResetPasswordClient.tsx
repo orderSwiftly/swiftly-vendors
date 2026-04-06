@@ -50,7 +50,7 @@ export default function ResetPasswordClient() {
           <Image src="/brand-logo.png" alt="Swiftly" width={32} height={32} />
           <span className="text-base font-semibold text-gray-700">swiftly</span>
         </div>
-        <p className="text-sm font-medium text-gray-600 -mt-4">Swiftly IIMS</p>
+        <p className="text-sm font-medium text-gray-600 -mt-4">Swiftly IMS</p>
 
         <div className="w-full flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">

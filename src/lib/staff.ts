@@ -32,6 +32,13 @@ export interface InviteStaffBody {
     email: string;
 }
 
+export interface DismissedStaffMember {
+    id: string;
+    name: string;
+    email: string | null;
+    dismissed_at: string;
+}
+
 export const inviteStaff = async (people: InviteStaffBody[]): Promise<{ invited: number }> => {
     try {
         const token = localStorage.getItem('token');
@@ -95,12 +102,30 @@ export const dismissStaff = async (params: { staffId: string }): Promise<void> =
         const token = localStorage.getItem('token');
         if (!token) throw new Error("No token found");
 
-        await api.delete(`/staff/${params.staffId}`, {
+        await api.delete(`/staff/${params.staffId}/dismiss`, {
             headers: { Authorization: `Bearer ${token}` }
         });
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(error.response?.data?.message || 'Failed to dismiss staff.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+export const getDismissedStaff = async (): Promise<{ dismissed_staff: DismissedStaffMember[]; total: number }> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        const response = await api.get('/staff/dismissed', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch dismissed staff.');
         }
         throw new Error('An unexpected error occurred.');
     }

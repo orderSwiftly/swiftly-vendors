@@ -4,8 +4,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
     title: {
-        template: '%s | Swiftly IIMS',
-        default: 'Swiftly IIMS',
+        template: '%s | Swiftly IMS',
+        default: 'Swiftly IMS',
     },
     description: 'Efficient inventory management system.',
 };

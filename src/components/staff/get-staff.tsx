@@ -2,9 +2,9 @@
 
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, Mail, Key, X, Eye, Briefcase, Users, UserMinus, Search, UserX, ChevronDown } from "lucide-react";
+import { Loader2, Mail, Key, X, Eye, Briefcase, Search } from "lucide-react";
 import { toast } from "sonner";
 import { getStaffs, type StaffMember } from "@/lib/staff";
 import InviteStaff from "./invite-staff";
@@ -12,14 +12,6 @@ import InviteStaff from "./invite-staff";
 interface GetStaffProps {
     storeId?: string;
 }
-
-type FilterTab = "all" | "unassigned" | "dismissed";
-
-const FILTER_OPTIONS: { key: FilterTab; label: string; icon: React.ReactNode }[] = [
-    { key: "all", label: "All Staff", icon: <Users size={13} /> },
-    { key: "unassigned", label: "Unassigned", icon: <UserMinus size={13} /> },
-    { key: "dismissed", label: "Dismissed", icon: <UserX size={13} /> },
-];
 
 export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProps>) {
     const params = useParams();
@@ -30,10 +22,7 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
     const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-    const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
     const [search, setSearch] = useState("");
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const fetchStaff = async () => {
         if (!storeId) { setLoading(false); return; }
@@ -53,47 +42,20 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
 
     useEffect(() => { fetchStaff(); }, [storeId]);
 
-    // Close dropdown on outside click
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setDropdownOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
     const handleViewStaff = (staffId: string) => {
         router.push(`/dashboard/staff/${storeId}/${staffId}`);
     };
 
     const filteredStaff = useMemo(() => {
-        let list = staff;
-
-        if (activeFilter === "unassigned") list = list.filter((m) => !m.role);
-        else if (activeFilter === "dismissed") list = list.filter((m) => m.dismissed);
-
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            list = list.filter(
-                (m) =>
-                    m.name.toLowerCase().includes(q) ||
-                    (m.email ?? "").toLowerCase().includes(q)
-            );
-        }
-
-        return list;
-    }, [staff, activeFilter, search]);
-
-    const activeOption = FILTER_OPTIONS.find((o) => o.key === activeFilter)!;
-
-    const emptyMessage = () => {
-        if (activeFilter === "dismissed") return "No dismissed staff.";
-        if (activeFilter === "unassigned") return "All staff members have roles assigned.";
-        if (search) return `No staff match "${search}".`;
-        return null;
-    };
+        if (!search.trim()) return staff;
+        const q = search.toLowerCase();
+        return staff.filter(
+            (m) => m.name.toLowerCase().includes(q) ||
+                (m.email ?? "").toLowerCase().includes(q) ||
+                (m.role ?? "").toLowerCase().includes(q) ||
+                (m.access ?? "").toLowerCase().includes(q)
+        );
+    }, [staff, search]);
 
     if (!storeId) {
         return (
@@ -127,68 +89,24 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
                     <InviteStaff storeId={storeId} variant="button-only" onInvited={fetchStaff} />
                 </div>
 
-                {/* Search + Filter row */}
-                <div className="flex gap-2">
-                    {/* Search */}
-                    <div className="relative flex-1 min-w-0">
-                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 pointer-events-none" />
-                        <input
-                            type="text"
-                            placeholder="Search by name or email…"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--prof-clr) transition-colors bg-white placeholder:text-(--pry-clr)/30"
-                        />
-                        {search && (
-                            <button
-                                onClick={() => setSearch("")}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 hover:text-(--pry-clr) transition-colors"
-                            >
-                                <X size={14} />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter dropdown */}
-                    <div className="relative shrink-0" ref={dropdownRef}>
+                {/* Search */}
+                <div className="relative">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 pointer-events-none" />
+                    <input
+                        type="text"
+                        placeholder="Search by name or email…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--prof-clr) transition-colors bg-white placeholder:text-(--pry-clr)/30"
+                    />
+                    {search && (
                         <button
-                            onClick={() => setDropdownOpen((v) => !v)}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold sec-ff transition-colors whitespace-nowrap ${
-                                activeFilter !== "all"
-                                    ? "border-(--prof-clr) bg-(--pry-clr)/5 text-(--pry-clr)"
-                                    : "border-gray-200 bg-white text-(--pry-clr)"
-                            }`}
+                            onClick={() => setSearch("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 hover:text-(--pry-clr) transition-colors"
                         >
-                            {activeOption.icon}
-                            <span className="hidden sm:inline">{activeOption.label}</span>
-                            <ChevronDown
-                                size={14}
-                                className={`text-(--pry-clr)/50 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
-                            />
+                            <X size={14} />
                         </button>
-
-                        {dropdownOpen && (
-                            <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-xl border border-gray-200 shadow-lg z-20 overflow-hidden">
-                                {FILTER_OPTIONS.map(({ key, label, icon }) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => { setActiveFilter(key); setDropdownOpen(false); }}
-                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm sec-ff transition-colors ${
-                                            activeFilter === key
-                                                ? "bg-(--pry-clr)/8 text-(--pry-clr) font-semibold"
-                                                : "text-(--pry-clr)/70 hover:bg-gray-50"
-                                        }`}
-                                    >
-                                        {icon}
-                                        {label}
-                                        {activeFilter === key && (
-                                            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--acc-clr)" />
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 {/* Content */}
@@ -198,8 +116,8 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
                     </div>
                 ) : filteredStaff.length === 0 ? (
                     <div className="text-center py-10">
-                        {emptyMessage() ? (
-                            <p className="text-sm text-(--pry-clr)/50 sec-ff">{emptyMessage()}</p>
+                        {search ? (
+                            <p className="text-sm text-(--pry-clr)/50 sec-ff">No staff match &ldquo;{search}&rdquo;.</p>
                         ) : (
                             <div>
                                 <p className="text-sm text-(--pry-clr)/70 sec-ff mb-3">

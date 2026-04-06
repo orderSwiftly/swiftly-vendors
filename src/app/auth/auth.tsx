@@ -45,7 +45,7 @@ export default function AuthComp() {
                 <div className="flex flex-col items-center mb-6">
                     <Image
                         src="/brand-logo.png"
-                        alt="Swiftly IIMS"
+                        alt="Swiftly IMS"
                         width={54}
                         height={54}
                         loading="eager"
@@ -53,7 +53,7 @@ export default function AuthComp() {
                         style={{ width: 'auto' }}
                     />
                     <p className="text-base font-semibold mt-1" style={{ fontFamily: "var(--pry-ff)", color: "var(--pry-clr)" }}>
-                        Swiftly IIMS
+                        Swiftly IMS
                     </p>
                 </div>
 
