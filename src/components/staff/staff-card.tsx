@@ -4,14 +4,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ChevronRight, MapPin } from "lucide-react";
+import { Loader2, ChevronRight, MapPin, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { getStores, type Store } from "@/lib/store";
 import InviteStaff from "./invite-staff";
+import AllStaff from "./all-staff";
+
+type View = "stores" | "all-staff";
 
 export default function StaffCard() {
     const [stores, setStores] = useState<Store[]>([]);
     const [loading, setLoading] = useState(true);
+    const [view, setView] = useState<View>("stores");
     const router = useRouter();
 
     useEffect(() => {
@@ -32,16 +36,43 @@ export default function StaffCard() {
         <div className="flex flex-col gap-6">
             <div className="rounded-2xl bg-(--txt-clr) p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-lg font-bold text-(--pry-clr) sec-ff">Staff</h2>
-                        <p className="text-sm text-(--pry-clr)/70 sec-ff mt-0.5">
-                            Select a store to manage its staff
-                        </p>
+                    <div className="flex items-center gap-3">
+                        {view === "all-staff" && (
+                            <button
+                                onClick={() => setView("stores")}
+                                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-(--pry-clr)/5 transition-colors shrink-0"
+                            >
+                                <ArrowLeft size={16} className="text-(--pry-clr)" />
+                            </button>
+                        )}
+                        <div>
+                            <h2 className="text-lg font-bold text-(--pry-clr) sec-ff">
+                                {view === "all-staff" ? "All Staff" : "Staff"}
+                            </h2>
+                            <p className="text-sm text-(--pry-clr)/70 sec-ff mt-0.5">
+                                {view === "all-staff"
+                                    ? "Every staff member across your organisation"
+                                    : "Select a store to manage its staff"}
+                            </p>
+                        </div>
                     </div>
-                    <InviteStaff variant="button-only" />
+
+                    <div className="flex items-center gap-2">
+                        {view === "stores" && (
+                            <button
+                                onClick={() => setView("all-staff")}
+                                className="text-sm font-semibold sec-ff text-(--pry-clr) px-3 py-2 rounded-xl border border-gray-200 hover:bg-(--pry-clr)/5 transition-colors"
+                            >
+                                See all staff
+                            </button>
+                        )}
+                        <InviteStaff variant="button-only" />
+                    </div>
                 </div>
 
-                {loading ? (
+                {view === "all-staff" ? (
+                    <AllStaff />
+                ) : loading ? (
                     <div className="flex items-center justify-center py-10">
                         <Loader2 size={22} className="animate-spin text-(--pry-clr)" />
                     </div>
@@ -64,9 +95,7 @@ export default function StaffCard() {
                                         </span>
                                     </div>
                                     <div className="text-left">
-                                        <p className="text-sm font-semibold text-(--pry-clr) sec-ff">
-                                            {store.name}
-                                        </p>
+                                        <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{store.name}</p>
                                         <p className="text-xs text-(--pry-clr)/50 sec-ff flex items-center gap-1 mt-0.5">
                                             <MapPin size={10} />
                                             {store.locations.length} location{store.locations.length !== 1 ? "s" : ""}
@@ -81,10 +110,7 @@ export default function StaffCard() {
                                     }`}>
                                         {store.is_active ? "Active" : "Inactive"}
                                     </span>
-                                    <ChevronRight
-                                        size={16}
-                                        className="text-(--pry-clr)/40 group-hover:text-(--pry-clr) transition-colors"
-                                    />
+                                    <ChevronRight size={16} className="text-(--pry-clr)/40 group-hover:text-(--pry-clr) transition-colors" />
                                 </div>
                             </button>
                         ))}
