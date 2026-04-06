@@ -17,6 +17,7 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
+    CreditCard,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useSidebar } from '@/components/sidebar-context';
@@ -28,11 +29,12 @@ const navItems = [
     { label: 'Store and location', href: '/dashboard/store-location', icon: MapPin },
     { label: 'Products',           href: '/dashboard/products',       icon: Package },
     { label: 'Inventory',          href: '/dashboard/inventory',      icon: Boxes },
-    { label: 'Stock transfers',    href: '/dashboard/stock-transfers', icon: ArrowLeftRight },
+    // { label: 'Stock transfers',    href: '/dashboard/stock-transfers', icon: ArrowLeftRight },
     { label: 'Manage staff',       href: '/dashboard/staff',          icon: Users },
-    { label: 'Transactions',       href: '/dashboard/transactions',   icon: BarChart3 },
-    { label: 'Reports',            href: '/dashboard/reports',        icon: FileText },
-    { label: 'Audit Log',          href: '/dashboard/audit-log',      icon: ClipboardList },
+    // { label: 'Transactions',       href: '/dashboard/transactions',   icon: BarChart3 },
+    // { label: 'Reports',            href: '/dashboard/reports',        icon: FileText },
+    // { label: 'Audit Log',          href: '/dashboard/audit-log',      icon: ClipboardList },
+    { label: 'Process Sale',            href: '/dashboard/process-sale',        icon: CreditCard },
 ];
 
 export default function Sidebar() {
