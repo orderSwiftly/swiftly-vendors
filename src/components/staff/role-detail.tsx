@@ -1,11 +1,11 @@
-// src/components/staff/role-detail.tsx (updated)
+// src/components/staff/role-detail.tsx
 
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Users, UserRound } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
-import { getRoleDetails, type Role, type RoleDetails, ALL_PERMISSIONS } from "@/lib/role";
+import { getRoleDetails, editRole, type Role, type RoleDetails, type RolePermissions, ALL_PERMISSIONS } from "@/lib/role";
 import RevokeRoleModal from "./revoke-role-modal";
 
 const PERMISSION_LABELS: Record<string, { label: string; description: string }> = {
@@ -32,7 +32,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
     const [name, setName] = useState(role.name);
     const [selected, setSelected] = useState<Set<string>>(new Set(role.permissions));
     const [saving, setSaving] = useState(false);
-    
+
     // Revoke modal state
     const [revokeModalOpen, setRevokeModalOpen] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState<{ id: string; name: string } | null>(null);
@@ -63,7 +63,15 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
 
         setSaving(true);
         try {
-            // TODO: wire up updateRole(role.id, { name, permissions: Array.from(selected) })
+            const permissionsObj = ALL_PERMISSIONS.reduce((acc, perm) => {
+                acc[perm] = selected.has(perm);
+                return acc;
+            }, {} as RolePermissions);
+
+            await editRole(role.id, {
+                name: name.trim(),
+                permissions: permissionsObj,
+            });
             toast.success(`Role "${name.trim()}" updated.`);
             onSaved();
         } catch (err) {
@@ -79,7 +87,6 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
     };
 
     const handleRevokeSuccess = () => {
-        // Refresh role details after revoke
         getRoleDetails(role.id)
             .then((data) => {
                 setDetail(data);
@@ -96,11 +103,6 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
             </div>
         );
     }
-
-    // Get permissions that will be removed (current role permissions)
-    const permissionsToRemove = role.permissions.map(perm => 
-        PERMISSION_LABELS[perm]?.label || perm
-    );
 
     return (
         <div className="flex flex-col gap-6 mb-20">
@@ -152,7 +154,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                                     <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{member.name}</p>
                                 </div>
                                 <span className="text-xs text-(--pry-clr)/50 sec-ff">{member.access_summary}</span>
-                                <button 
+                                <button
                                     onClick={() => handleRevokeClick(member.id, member.name)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-(--pry-clr) text-sm font-semibold sec-ff hover:bg-(--pry-clr)/5 transition-colors cursor-pointer"
                                 >
@@ -227,7 +229,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                 disabled={saving}
                 className="w-full py-3 rounded-xl bg-(--prof-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--prof-clr)/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
             >
-                {saving ? <><Loader2 size={15} className="animate-spin" /> Saving… </> : "Save Changes"}
+                {saving ? <><Loader2 size={15} className="animate-spin" /> Saving…</> : "Save Changes"}
             </button>
         </div>
     );

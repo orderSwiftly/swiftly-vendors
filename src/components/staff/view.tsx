@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getStaffs, type StaffMember } from "@/lib/staff";
+import { getStaffs, type StaffMember, editStaff } from "@/lib/staff";
 import GetRoles from "./get-roles";
 import GrantAccess from "./grant-access";
 import DismissStaff from "./dismiss";
@@ -51,16 +51,26 @@ export default function StaffView({ staffId, storeId }: Readonly<StaffViewProps>
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            toast.success("Changes saved.");
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to save changes.");
-        } finally {
-            setSaving(false);
-        }
-    };
+const handleSave = async () => {
+    if (!form.first_name.trim()) return toast.error("First name is required.");
+    if (!form.last_name.trim()) return toast.error("Last name is required.");
+
+    setSaving(true);
+    try {
+        await editStaff(staffId, {
+            first_name: form.first_name.trim(),
+            last_name: form.last_name.trim(),
+        });
+        toast.success("Changes saved.");
+        setMember((prev) =>
+            prev ? { ...prev, name: `${form.first_name.trim()} ${form.last_name.trim()}` } : prev
+        );
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to save changes.");
+    } finally {
+        setSaving(false);
+    }
+};
 
     if (loading) {
         return (

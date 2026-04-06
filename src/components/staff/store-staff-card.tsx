@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus } from "lucide-react";
 import GetStaff from "./get-staff";
@@ -24,9 +24,11 @@ export default function StoreStaffCard({ storeId }: Readonly<StoreStaffCardProps
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const router = useRouter();
 
-    const handleInvited = useCallback(() => {
-        setRefreshKey((k) => k + 1);
-    }, []);
+useEffect(() => {
+    const handleFocus = () => setRefreshKey((k) => k + 1);
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+}, []);
 
     const handleBack = () => {
         if (view === "role-detail") { setView("roles"); return; }

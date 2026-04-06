@@ -119,3 +119,41 @@ export const revokeRole = async (roleId: string): Promise<void> => {
         throw new Error('An unexpected error occurred.');
     }
 };
+
+// edit role
+export interface RolePermissions {
+    organization__manage: boolean;
+    store__manage: boolean;
+    location__manage: boolean;
+    product__manage: boolean;
+    product__list: boolean;
+    staff__manage: boolean;
+    inventory__adjust: boolean;
+    inventory__view: boolean;
+    inventory__inflow: boolean;
+    sales__process: boolean;
+}
+
+export interface EditRoleInput {
+    name: string;
+    permissions: RolePermissions;
+}
+
+export const editRole = async (
+    roleId: string,
+    body: EditRoleInput,
+): Promise<void> => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        const response = await api.patch(`/roles/${roleId}`, body, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || "Failed to edit role.");
+        }
+        throw new Error("An unexpected error occurred.");
+    }
+};

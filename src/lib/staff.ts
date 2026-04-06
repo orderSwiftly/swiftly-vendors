@@ -39,6 +39,11 @@ export interface DismissedStaffMember {
     dismissed_at: string;
 }
 
+export interface EditStaffInput {
+    first_name: string;
+    last_name: string;
+}
+
 export const inviteStaff = async (people: InviteStaffBody[]): Promise<{ invited: number }> => {
     try {
         const token = localStorage.getItem('token');
@@ -130,3 +135,22 @@ export const getDismissedStaff = async (): Promise<{ dismissed_staff: DismissedS
         throw new Error('An unexpected error occurred.');
     }
 }
+
+export const editStaff = async (
+    staffId: string,
+    body: EditStaffInput,
+): Promise<void> => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        const response = await api.patch(`/staff/${staffId}`, body, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || "Failed to edit staff.");
+        }
+        throw new Error("An unexpected error occurred.");
+    }
+};
