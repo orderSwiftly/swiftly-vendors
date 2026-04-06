@@ -1,6 +1,80 @@
 // src/app/dashboard/roles/page.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { getRoles, Role } from "@/lib/role"; // adjust import path
+
+const PERMISSION_LABELS: Record<string, string> = {
+  "organization__manage": "Manage Organisation",
+  "store__manage": "Manage Stores",
+  "location__manage": "Manage Locations",
+  "product__manage": "Manage Products",
+  "product__list": "View Products",
+  "staff__manage": "Manage Staff",
+  "inventory__adjust": "Adjust Inventory",
+  "inventory__view": "View Inventory",
+  "inventory__inflow": "Inventory Inflow",
+  "sales__process": "Process Sales",
+};
+
+function RoleCard({ role }: { role: Role }) {
+  return (
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 border border-gray-100">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{role.name}</p>
+          <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">
+            {role.staff_count} staff member{role.staff_count !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <span className="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full bg-(--pry-clr)/8 text-(--pry-clr)/70 sec-ff">
+          {role.permissions.length} permission{role.permissions.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {role.permissions.map((perm) => (
+          <span
+            key={perm}
+            className="text-xs px-2.5 py-1 rounded-lg bg-(--acc-clr)/15 text-(--pry-clr)/80 sec-ff font-medium"
+          >
+            {PERMISSION_LABELS[perm] ?? perm}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RoleCardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 border border-gray-100 animate-pulse">
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-2">
+          <div className="h-4 w-28 rounded bg-gray-200" />
+          <div className="h-3 w-20 rounded bg-gray-100" />
+        </div>
+        <div className="h-6 w-20 rounded-full bg-gray-100" />
+      </div>
+      <div className="flex gap-2">
+        <div className="h-6 w-24 rounded-lg bg-gray-100" />
+        <div className="h-6 w-20 rounded-lg bg-gray-100" />
+      </div>
+    </div>
+  );
+}
 
 export default function RolesPage() {
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getRoles()
+      .then(setRoles)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-8 py-6 mb-20">
       {/* Header */}
@@ -35,7 +109,6 @@ export default function RolesPage() {
         </p>
 
         <ul className="flex flex-col gap-3 mt-1">
-          {/* Organization */}
           <li className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50">
             <div className="w-8 h-8 rounded-lg bg-(--pry-clr)/10 flex items-center justify-center shrink-0 mt-0.5">
               <span className="text-xs font-bold text-(--pry-clr) sec-ff">O</span>
@@ -49,8 +122,6 @@ export default function RolesPage() {
               </p>
             </div>
           </li>
-
-          {/* Store */}
           <li className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50">
             <div className="w-8 h-8 rounded-lg bg-(--acc-clr)/20 flex items-center justify-center shrink-0 mt-0.5">
               <span className="text-xs font-bold text-(--acc-clr) sec-ff">S</span>
@@ -64,8 +135,6 @@ export default function RolesPage() {
               </p>
             </div>
           </li>
-
-          {/* Location */}
           <li className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
               <span className="text-xs font-bold text-emerald-500 sec-ff">L</span>
@@ -107,6 +176,27 @@ export default function RolesPage() {
           A staff member can have multiple access grants — for example, a Store Manager role at
           Store A and a Cashier role at a specific location in Store B.
         </p>
+      </div>
+
+      {/* Roles list */}
+      <div className="flex flex-col gap-4">
+        <h2 className="text-base font-bold text-(--pry-clr) sec-ff">Your organisation&apos;s roles</h2>
+
+        {loading && (
+          <>
+            <RoleCardSkeleton />
+            <RoleCardSkeleton />
+            <RoleCardSkeleton />
+          </>
+        )}
+
+        {error && (
+          <p className="text-sm text-red-500 sec-ff">{error}</p>
+        )}
+
+        {!loading && !error && roles.map((role) => (
+          <RoleCard key={role.id} role={role} />
+        ))}
       </div>
     </div>
   );

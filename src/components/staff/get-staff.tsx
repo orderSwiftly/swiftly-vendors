@@ -2,82 +2,97 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, UserPlus, Mail, Key, X, Eye, Briefcase, Users, UserMinus } from "lucide-react";
+import { Loader2, Mail, Key, X, Eye, Briefcase, Users, UserMinus, Search, UserX, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { getStaffs, type StaffMember } from "@/lib/staff";
 import InviteStaff from "./invite-staff";
 
 interface GetStaffProps {
-    storeId?: string; // Optional for backward compatibility
+    storeId?: string;
 }
+
+type FilterTab = "all" | "unassigned" | "dismissed";
+
+const FILTER_OPTIONS: { key: FilterTab; label: string; icon: React.ReactNode }[] = [
+    { key: "all", label: "All Staff", icon: <Users size={13} /> },
+    { key: "unassigned", label: "Unassigned", icon: <UserMinus size={13} /> },
+    { key: "dismissed", label: "Dismissed", icon: <UserX size={13} /> },
+];
 
 export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProps>) {
     const params = useParams();
     const router = useRouter();
-    // Get storeId from URL params if not provided as prop
     const storeId = propStoreId || (params?.storeId as string);
-    
+
     const [staff, setStaff] = useState<StaffMember[]>([]);
-    const [unassignedStaff, setUnassignedStaff] = useState<StaffMember[]>([]);
     const [loading, setLoading] = useState(true);
-    const [loadingUnassigned, setLoadingUnassigned] = useState(false);
     const [total, setTotal] = useState(0);
     const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-    const [showUnassigned, setShowUnassigned] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+    const [search, setSearch] = useState("");
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const fetchStaff = async () => {
-            if (!storeId) {
-                setLoading(false);
-                return;
-            }
-            
-            try {
-                setLoading(true);
-                // Pass the store_id to only get staff for this specific store
-                const data = await getStaffs(storeId);
-                setStaff(data.staff);
-                setTotal(data.total);
-            } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Failed to load staff members.");
-                setStaff([]);
-                setTotal(0);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStaff();
-    }, [storeId]);
-
-    const fetchUnassignedStaff = async () => {
-        if (!storeId) return;
-        
-        setLoadingUnassigned(true);
+    const fetchStaff = async () => {
+        if (!storeId) { setLoading(false); return; }
         try {
+            setLoading(true);
             const data = await getStaffs(storeId);
-            // Filter staff members who don't have a role assigned
-            const withoutRole = data.staff.filter((member) => !member.role);
-            setUnassignedStaff(withoutRole);
+            setStaff(data.staff);
+            setTotal(data.total);
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to load unassigned staff.");
-            setUnassignedStaff([]);
+            toast.error(err instanceof Error ? err.message : "Failed to load staff members.");
+            setStaff([]);
+            setTotal(0);
         } finally {
-            setLoadingUnassigned(false);
+            setLoading(false);
         }
     };
+
+    useEffect(() => { fetchStaff(); }, [storeId]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
 
     const handleViewStaff = (staffId: string) => {
         router.push(`/dashboard/staff/${storeId}/${staffId}`);
     };
 
-    const handleToggleUnassigned = () => {
-        if (!showUnassigned) {
-            fetchUnassignedStaff();
+    const filteredStaff = useMemo(() => {
+        let list = staff;
+
+        if (activeFilter === "unassigned") list = list.filter((m) => !m.role);
+        else if (activeFilter === "dismissed") list = list.filter((m) => m.dismissed);
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            list = list.filter(
+                (m) =>
+                    m.name.toLowerCase().includes(q) ||
+                    (m.email ?? "").toLowerCase().includes(q)
+            );
         }
-        setShowUnassigned(!showUnassigned);
+
+        return list;
+    }, [staff, activeFilter, search]);
+
+    const activeOption = FILTER_OPTIONS.find((o) => o.key === activeFilter)!;
+
+    const emptyMessage = () => {
+        if (activeFilter === "dismissed") return "No dismissed staff.";
+        if (activeFilter === "unassigned") return "All staff members have roles assigned.";
+        if (search) return `No staff match "${search}".`;
+        return null;
     };
 
     if (!storeId) {
@@ -99,8 +114,9 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
                     onViewFullProfile={() => handleViewStaff(selectedStaff.id)}
                 />
             )}
-            
+
             <div className="rounded-2xl bg-(--txt-clr) p-6 flex flex-col gap-4 sec-ff">
+                {/* Header */}
                 <div className="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <h2 className="text-lg font-bold text-(--pry-clr) sec-ff">Staff Members</h2>
@@ -108,102 +124,115 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
                             Total: {total} staff member{total !== 1 ? "s" : ""}
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <InviteStaff storeId={storeId} variant="button-only" onInvited={fetchStaff} />
+                </div>
+
+                {/* Search + Filter row */}
+                <div className="flex gap-2">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-0">
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search by name or email…"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--prof-clr) transition-colors bg-white placeholder:text-(--pry-clr)/30"
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--pry-clr)/40 hover:text-(--pry-clr) transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter dropdown */}
+                    <div className="relative shrink-0" ref={dropdownRef}>
                         <button
-                            onClick={handleToggleUnassigned}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-(--pry-clr) hover:bg-(--pry-clr)/5 transition-colors"
+                            onClick={() => setDropdownOpen((v) => !v)}
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-semibold sec-ff transition-colors whitespace-nowrap ${
+                                activeFilter !== "all"
+                                    ? "border-(--prof-clr) bg-(--pry-clr)/5 text-(--pry-clr)"
+                                    : "border-gray-200 bg-white text-(--pry-clr)"
+                            }`}
                         >
-                            {showUnassigned ? <Users size={16} /> : <UserMinus size={16} />}
-                            {showUnassigned ? "Hide Unassigned" : "Show Unassigned"}
+                            {activeOption.icon}
+                            <span className="hidden sm:inline">{activeOption.label}</span>
+                            <ChevronDown
+                                size={14}
+                                className={`text-(--pry-clr)/50 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                            />
                         </button>
-                        <InviteStaff storeId={storeId} variant="button-only" onInvited={() => {
-                            // Refresh both lists when new staff is invited
-                            const fetchData = async () => {
-                                const data = await getStaffs(storeId);
-                                setStaff(data.staff);
-                                setTotal(data.total);
-                                if (showUnassigned) {
-                                    const withoutRole = data.staff.filter((member) => !member.role);
-                                    setUnassignedStaff(withoutRole);
-                                }
-                            };
-                            fetchData();
-                        }} />
+
+                        {dropdownOpen && (
+                            <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-xl border border-gray-200 shadow-lg z-20 overflow-hidden">
+                                {FILTER_OPTIONS.map(({ key, label, icon }) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => { setActiveFilter(key); setDropdownOpen(false); }}
+                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm sec-ff transition-colors ${
+                                            activeFilter === key
+                                                ? "bg-(--pry-clr)/8 text-(--pry-clr) font-semibold"
+                                                : "text-(--pry-clr)/70 hover:bg-gray-50"
+                                        }`}
+                                    >
+                                        {icon}
+                                        {label}
+                                        {activeFilter === key && (
+                                            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-(--acc-clr)" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
+                {/* Content */}
                 {loading ? (
                     <div className="flex items-center justify-center py-10">
                         <Loader2 size={22} className="animate-spin text-(--pry-clr)" />
                     </div>
-                ) : staff.length === 0 && (!showUnassigned || unassignedStaff.length === 0) ? (
+                ) : filteredStaff.length === 0 ? (
                     <div className="text-center py-10">
-                        <p className="text-sm text-(--pry-clr)/70 sec-ff mb-3">
-                            No staff members found for this store.
-                        </p>
-                        <InviteStaff storeId={storeId} variant="button-with-text" />
+                        {emptyMessage() ? (
+                            <p className="text-sm text-(--pry-clr)/50 sec-ff">{emptyMessage()}</p>
+                        ) : (
+                            <div>
+                                <p className="text-sm text-(--pry-clr)/70 sec-ff mb-3">
+                                    No staff members found for this store.
+                                </p>
+                                <InviteStaff storeId={storeId} variant="button-with-text" />
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <>
-                        {/* All Staff Section */}
-                        {staff.length > 0 && (
-                            <div>
-                                <h3 className="text-sm font-semibold text-(--pry-clr)/70 sec-ff mb-3 flex items-center gap-2">
-                                    <Users size={14} />
-                                    All Staff Members
-                                </h3>
-                                <StaffTable 
-                                    staff={staff} 
-                                    onViewDetails={(member) => setSelectedStaff(member)}
-                                    onViewFullProfile={(id) => handleViewStaff(id)}
-                                />
-                            </div>
-                        )}
-
-                        {/* Unassigned Staff Section (Staff without roles) */}
-                        {showUnassigned && (
-                            <div className="mt-4">
-                                <h3 className="text-sm font-semibold text-(--pry-clr)/70 sec-ff mb-3 flex items-center gap-2">
-                                    <UserMinus size={14} />
-                                    Unassigned Staff (No Role Assigned)
-                                </h3>
-                                {loadingUnassigned ? (
-                                    <div className="flex items-center justify-center py-6">
-                                        <Loader2 size={18} className="animate-spin text-(--pry-clr)" />
-                                    </div>
-                                ) : unassignedStaff.length === 0 ? (
-                                    <p className="text-sm text-(--pry-clr)/50 sec-ff text-center py-6">
-                                        All staff members have roles assigned.
-                                    </p>
-                                ) : (
-                                    <StaffTable 
-                                        staff={unassignedStaff} 
-                                        onViewDetails={(member) => setSelectedStaff(member)}
-                                        onViewFullProfile={(id) => handleViewStaff(id)}
-                                    />
-                                )}
-                            </div>
-                        )}
-                    </>
+                    <StaffTable
+                        staff={filteredStaff}
+                        onViewDetails={(member) => setSelectedStaff(member)}
+                        onViewFullProfile={(id) => handleViewStaff(id)}
+                    />
                 )}
             </div>
         </>
     );
 }
 
-// Separate component for the staff table/cards to avoid duplication
-function StaffTable({ 
-    staff, 
-    onViewDetails, 
-    onViewFullProfile 
-}: { 
+function StaffTable({
+    staff,
+    onViewDetails,
+    onViewFullProfile,
+}: {
     staff: StaffMember[];
     onViewDetails: (member: StaffMember) => void;
     onViewFullProfile: (id: string) => void;
 }) {
     return (
         <>
-            {/* Desktop Table View - hidden on mobile */}
+            {/* Desktop */}
             <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                     <thead>
@@ -217,31 +246,21 @@ function StaffTable({
                     </thead>
                     <tbody>
                         {staff.map((member) => (
-                            <tr
-                                key={member.id}
-                                className="border-b border-gray-100 hover:bg-(--pry-clr)/5 transition-colors group"
-                            >
+                            <tr key={member.id} className="border-b border-gray-100 hover:bg-(--pry-clr)/5 transition-colors">
                                 <td className="py-3 px-4">
-                                    <button
-                                        onClick={() => onViewDetails(member)}
-                                        className="flex items-center gap-3"
-                                    >
+                                    <button onClick={() => onViewDetails(member)} className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-(--pry-clr)/10 flex items-center justify-center shrink-0">
                                             <span className="text-xs font-bold text-(--pry-clr) sec-ff">
                                                 {member.name.slice(0, 2).toUpperCase()}
                                             </span>
                                         </div>
-                                        <span className="text-sm font-semibold text-(--pry-clr) sec-ff">
-                                            {member.name}
-                                        </span>
+                                        <span className="text-sm font-semibold text-(--pry-clr) sec-ff">{member.name}</span>
                                     </button>
                                 </td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-1">
                                         <Mail size={12} className="text-(--pry-clr)/40" />
-                                        <span className="text-sm text-(--pry-clr)/70 sec-ff">
-                                            {member.email || "—"}
-                                        </span>
+                                        <span className="text-sm text-(--pry-clr)/70 sec-ff">{member.email || "—"}</span>
                                     </div>
                                 </td>
                                 <td className="py-3 px-4">
@@ -253,7 +272,7 @@ function StaffTable({
                                     ) : (
                                         <span className="text-sm text-(--pry-clr)/40 sec-ff">—</span>
                                     )}
-                                 </td>
+                                </td>
                                 <td className="py-3 px-4">
                                     {member.access ? (
                                         <span className="text-xs px-2 py-1 rounded-md bg-purple-500/10 text-purple-600 sec-ff font-medium">
@@ -262,7 +281,7 @@ function StaffTable({
                                     ) : (
                                         <span className="text-sm text-(--pry-clr)/40 sec-ff">—</span>
                                     )}
-                                 </td>
+                                </td>
                                 <td className="py-3 px-4 text-right">
                                     <button
                                         onClick={() => onViewFullProfile(member.id)}
@@ -271,14 +290,14 @@ function StaffTable({
                                         <Eye size={12} />
                                         View
                                     </button>
-                                 </td>
-                             </tr>
+                                </td>
+                            </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Mobile Card View - visible only on mobile */}
+            {/* Mobile */}
             <div className="flex flex-col gap-3 md:hidden">
                 {staff.map((member) => (
                     <MobileStaffCard
@@ -305,19 +324,14 @@ function MobileStaffCard({
     return (
         <div className="w-full p-4 rounded-xl border border-gray-200 hover:border-(--pry-clr)/30 hover:bg-(--pry-clr)/5 transition-all">
             <div className="flex items-start justify-between mb-3">
-                <button
-                    onClick={onViewDetails}
-                    className="flex items-center gap-3 flex-1 text-left"
-                >
+                <button onClick={onViewDetails} className="flex items-center gap-3 flex-1 text-left">
                     <div className="w-10 h-10 rounded-lg bg-(--pry-clr)/10 flex items-center justify-center shrink-0">
                         <span className="text-sm font-bold text-(--pry-clr) sec-ff">
                             {staff.name.slice(0, 2).toUpperCase()}
                         </span>
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-(--pry-clr) sec-ff">
-                            {staff.name}
-                        </p>
+                        <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{staff.name}</p>
                         {staff.email && (
                             <p className="text-xs text-(--pry-clr)/50 sec-ff flex items-center gap-1 mt-0.5">
                                 <Mail size={10} />
@@ -369,61 +383,46 @@ function StaffDetailsModal({
             <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-(--pry-clr) sec-ff">Staff Details</h3>
-                    <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
+                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                         <X size={18} />
                     </button>
                 </div>
-                
                 <div className="space-y-3">
                     <div>
                         <label className="text-xs font-medium text-(--pry-clr)/50 sec-ff">Name</label>
                         <p className="text-sm font-semibold text-(--pry-clr) sec-ff">{staff.name}</p>
                     </div>
-                    
                     {staff.email && (
                         <div>
                             <label className="text-xs font-medium text-(--pry-clr)/50 sec-ff flex items-center gap-1">
-                                <Mail size={12} />
-                                Email
+                                <Mail size={12} /> Email
                             </label>
                             <p className="text-sm text-(--pry-clr) sec-ff">{staff.email}</p>
                         </div>
                     )}
-                    
                     <div>
                         <label className="text-xs font-medium text-(--pry-clr)/50 sec-ff flex items-center gap-1">
-                            <Briefcase size={12} />
-                            Role
+                            <Briefcase size={12} /> Role
                         </label>
-                        <p className="text-sm text-(--pry-clr) sec-ff">
-                            {staff.role || "No role assigned"}
-                        </p>
+                        <p className="text-sm text-(--pry-clr) sec-ff">{staff.role || "No role assigned"}</p>
                     </div>
-                    
                     <div>
                         <label className="text-xs font-medium text-(--pry-clr)/50 sec-ff flex items-center gap-1">
-                            <Key size={12} />
-                            Access Level
+                            <Key size={12} /> Access Level
                         </label>
-                        <p className="text-sm text-(--pry-clr) sec-ff">
-                            {staff.access || "No special access"}
-                        </p>
+                        <p className="text-sm text-(--pry-clr) sec-ff">{staff.access || "No special access"}</p>
                     </div>
                 </div>
-                
                 <div className="mt-6 pt-4 border-t border-gray-200 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm sec-ff"
                     >
                         Close
                     </button>
                     <button
                         onClick={onViewFullProfile}
-                        className="flex-1 px-4 py-2 bg-(--pry-clr) text-white rounded-lg hover:bg-(--pry-clr)/90 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-(--pry-clr) text-white rounded-lg hover:bg-(--pry-clr)/90 transition-colors flex items-center justify-center gap-2 text-sm sec-ff"
                     >
                         <Eye size={14} />
                         View Full Profile

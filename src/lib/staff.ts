@@ -18,6 +18,7 @@ export interface StaffMember {
     access: string | null;
     role: string | null;
     store_id?: string | null;
+    dismissed?: boolean;
 }
 
 export interface StaffResponse {
@@ -84,6 +85,22 @@ export const getUnassignedStaff = async (): Promise<{ staff: StaffMember[]; tota
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(error.response?.data?.message || 'Failed to fetch unassigned staff.');
+        }
+        throw new Error('An unexpected error occurred.');
+    }
+}
+
+export const dismissStaff = async (params: { staffId: string }): Promise<void> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found");
+
+        await api.delete(`/staff/${params.staffId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to dismiss staff.');
         }
         throw new Error('An unexpected error occurred.');
     }
