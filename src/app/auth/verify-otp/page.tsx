@@ -1,5 +1,10 @@
 import React, { Suspense } from "react";
 import VerifyOtpClient from "@/components/auth/VerifyOtpClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Verify OTP",
+};
 
 export default function VerifyOtpPage() {
   return (

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import ProductsPageClient from "@/components/products/ProductsPageClient";
 
 export const metadata: Metadata = {
-  title: "Products",
+  title: "Product Details",
 };
 
 interface Props {

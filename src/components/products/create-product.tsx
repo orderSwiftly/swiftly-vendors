@@ -105,7 +105,7 @@ export default function CreateProduct({ storeId, onCreated }: Readonly<CreatePro
                                     name="name"
                                     value={form.name}
                                     onChange={handleChange}
-                                    placeholder="e.g. Octopus"
+                                    placeholder="e.g. Cake Bread"
                                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors placeholder:text-(--pry-clr)/30"
                                 />
                             </div>
@@ -120,7 +120,7 @@ export default function CreateProduct({ storeId, onCreated }: Readonly<CreatePro
                                     name="sku"
                                     value={form.sku}
                                     onChange={handleChange}
-                                    placeholder="e.g. bread"
+                                    placeholder="e.g. cake-bread"
                                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors placeholder:text-(--pry-clr)/30"
                                 />
                             </div>
@@ -170,7 +170,7 @@ export default function CreateProduct({ storeId, onCreated }: Readonly<CreatePro
                                         onChange={handleChange}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-10 h-5 bg-gray-200 peer-checked:bg-(--pry-clr) rounded-full transition-colors" />
+                                    <div className="w-10 h-5 bg-gray-200 peer-checked:bg-(--prof-clr) rounded-full transition-colors" />
                                     <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
                                 </label>
                             </div>

@@ -2,10 +2,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getRoles, Role } from "@/lib/role"; // adjust import path
+import { getRoles, Role } from "@/lib/role"; 
+import type { Metadata } from "next";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const metadata: Metadata = {
+  title: "Roles & Permissions",
+};
 
 const PERMISSION_LABELS: Record<string, string> = {
-  "organization__manage": "Manage Organisation",
+  "organization__manage": "Manage Organization",
   "store__manage": "Manage Stores",
   "location__manage": "Manage Locations",
   "product__manage": "Manage Products",

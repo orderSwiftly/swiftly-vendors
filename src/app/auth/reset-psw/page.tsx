@@ -1,6 +1,11 @@
 // Server component wrapper — client interactive logic lives in ResetPasswordClient
 import React, { Suspense } from "react";
 import ResetPasswordClient from "@/components/auth/ResetPasswordClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Reset Password",
+};
 
 export default function ResetPasswordPage() {
   return (

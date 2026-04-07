@@ -2,12 +2,13 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Loader2, Search, X, Package } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Loader2, Search, X, Package, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProductsByStore, type Product } from "@/lib/products";
 import CreateProduct from "./create-product";
 import EditProduct from "./edit-product";
+import ProductFile from "./product-file";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,6 +22,8 @@ export default function GetProducts({ storeId, storeName }: Readonly<GetProducts
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const loadProducts = async () => {
         try {
@@ -38,6 +41,17 @@ export default function GetProducts({ storeId, storeName }: Readonly<GetProducts
     useEffect(() => {
         loadProducts();
     }, [storeId]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
 
     const filteredProducts = useMemo(() => {
         if (!search.trim()) return products;
@@ -59,10 +73,11 @@ export default function GetProducts({ storeId, storeName }: Readonly<GetProducts
     return (
         <div className="rounded-2xl border border-gray-200 bg-white p-6 flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-    <p className="text-sm text-(--pry-clr)/60 sec-ff">
-        {storeName ? `${storeName} · ` : ""}{products.length} product{products.length !== 1 ? "s" : ""}
-    </p>
-</div>
+                <p className="text-sm text-(--pry-clr)/60 sec-ff">
+                    {storeName ? `${storeName} · ` : ""}{products.length} product{products.length !== 1 ? "s" : ""}
+                </p>
+            </div>
+
             {/* Search + Actions */}
             <div className="flex items-center gap-3 flex-wrap">
                 <div className="relative flex-1 min-w-48">
@@ -83,7 +98,33 @@ export default function GetProducts({ storeId, storeName }: Readonly<GetProducts
                         </button>
                     )}
                 </div>
+
                 <CreateProduct storeId={storeId} onCreated={loadProducts} />
+
+                {/* Import / Export Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setDropdownOpen((prev) => !prev)}
+                        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/5 transition-colors"
+                    >
+                        <ChevronDown
+                            size={15}
+                            className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                        />
+                        File
+                    </button>
+
+                    {dropdownOpen && (
+                        <div className="absolute right-0 top-[calc(100%+6px)] z-30 bg-white border border-gray-200 rounded-xl shadow-lg p-1.5 flex flex-col gap-0.5 min-w-[160px]">
+                            <ProductFile
+                                storeId={storeId}
+                                storeName={storeName}
+                                products={products}
+                                onImported={loadProducts}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Content */}

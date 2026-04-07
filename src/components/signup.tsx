@@ -48,7 +48,8 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex gap-3">
+            {/* First + Last name — stacked on mobile, side by side on sm+ */}
+            <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex flex-col gap-1.5 flex-1">
                     <label htmlFor="first-name" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         First Name
@@ -60,7 +61,7 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                         onChange={(e) => setFirstName(e.target.value)}
                         required
                         placeholder="John"
-                        className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
+                        className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
                         style={inputStyle}
                         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
                         onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
@@ -77,7 +78,7 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                         onChange={(e) => setLastName(e.target.value)}
                         required
                         placeholder="Doe"
-                        className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
+                        className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
                         style={inputStyle}
                         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
                         onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
@@ -96,14 +97,15 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="you@company.com"
-                    className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
+                    className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
                     style={inputStyle}
                     onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
                     onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
                 />
             </div>
 
-            <div className="flex gap-3">
+            {/* Password + Confirm — stacked on mobile, side by side on sm+ */}
+            <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex flex-col gap-1.5 flex-1">
                     <label htmlFor="signup-password" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         Enter Password
@@ -155,7 +157,7 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
             <button
                 type="submit"
                 disabled={loading}
-                className="mt-1 rounded-lg py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+                className="mt-1 rounded-lg py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer w-full"
                 style={{ fontFamily: "var(--pry-ff)", backgroundColor: "var(--acc-clr)", color: "var(--pry-clr)" }}
             >
                 {loading ? <Spinner /> : "Sign Up"}
