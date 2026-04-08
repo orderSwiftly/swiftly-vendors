@@ -1,11 +1,11 @@
 // app/dashboard/profile/page.tsx
 import type { Metadata } from "next";
-import ProfileComp from "@/components/profile/profile-component";
+import ProfileCard from "@/components/profile/profile-card";
 
 export const metadata: Metadata = {
     title: "Profile",
 };
 
 export default function ProfilePage() {
-    return <ProfileComp />;
+    return <ProfileCard />;
 }

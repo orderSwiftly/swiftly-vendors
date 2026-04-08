@@ -11,13 +11,11 @@ import {
     Boxes,
     ArrowLeftRight,
     Users,
-    BarChart3,
-    FileText,
-    ClipboardList,
     LogOut,
     ChevronLeft,
     ChevronRight,
-    CreditCard,
+    ShoppingBag,
+    UserCircle2,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useSidebar } from '@/components/sidebar-context';
@@ -26,11 +24,12 @@ import { logoutOwner } from '@/lib/auth';
 
 const navItems = [
     { label: 'Store',              href: '/dashboard',                icon: Store,          exact: true },
-    { label: 'Store and location', href: '/dashboard/store-location', icon: MapPin },
-    { label: 'Products',           href: '/dashboard/products',       icon: Package },
-    { label: 'Inventory',          href: '/dashboard/inventory',      icon: Boxes },
+    // { label: 'Store and location', href: '/dashboard/store-location', icon: MapPin },
+    { label: 'Products', href: '/dashboard/products', icon: Package },
+    { label: 'Inventory', href: '/dashboard/inventory', icon: Boxes },
+        { label: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
     // { label: 'Stock transfers',    href: '/dashboard/stock-transfers', icon: ArrowLeftRight },
-    { label: 'Manage staff',       href: '/dashboard/staff',          icon: Users },
+    // { label: 'Manage staff',       href: '/dashboard/staff',          icon: Users },
     // { label: 'Transactions',       href: '/dashboard/transactions',   icon: BarChart3 },
     // { label: 'Reports',            href: '/dashboard/reports',        icon: FileText },
     // { label: 'Audit Log',          href: '/dashboard/audit-log',      icon: ClipboardList },

@@ -14,6 +14,7 @@ body {
   --txt-clr: #FFFFFF;
   --prof-clr: #669917;
   --acc-clr: #9BDD37;
+  --tet-clr: #00A63E;
   --sec-clr: #c0c0c0;
   --dark-bg: #0f172a;
 
@@ -46,6 +47,11 @@ body {
 .txt-clr {
   color: var(--txt-clr);
   border: 1px solid var(--txt-clr);
+}
+
+.tet-clr {
+  color: var(--tet-clr);
+  border: 1px solid var(--tet-clr);
 }
 
 .sec-clr {
