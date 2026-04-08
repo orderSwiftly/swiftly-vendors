@@ -6,7 +6,7 @@ import { MapPin, Users, Shield } from 'lucide-react';
 const managementItems = [
     { label: 'Store & Location', href: '/dashboard/store-location', icon: MapPin },
     { label: 'Manage Staff',     href: '/dashboard/staff',          icon: Users      },
-    { label: 'Roles',            href: '/dashboard/roles',          icon: Shield     },
+    { label: 'Roles & Permissions', href: '/dashboard/roles',          icon: Shield     },
 ];
 
 export default function ProfileManagement() {

@@ -6,15 +6,11 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import {
     Store,
-    MapPin,
     Package,
     Boxes,
-    ArrowLeftRight,
-    Users,
     LogOut,
     ChevronLeft,
     ChevronRight,
-    ShoppingBag,
     UserCircle2,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -23,17 +19,10 @@ import { useProfileStore } from '@/store/userStore';
 import { logoutOwner } from '@/lib/auth';
 
 const navItems = [
-    { label: 'Store',              href: '/dashboard',                icon: Store,          exact: true },
-    // { label: 'Store and location', href: '/dashboard/store-location', icon: MapPin },
-    { label: 'Products', href: '/dashboard/products', icon: Package },
-    { label: 'Inventory', href: '/dashboard/inventory', icon: Boxes },
-        { label: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
-    // { label: 'Stock transfers',    href: '/dashboard/stock-transfers', icon: ArrowLeftRight },
-    // { label: 'Manage staff',       href: '/dashboard/staff',          icon: Users },
-    // { label: 'Transactions',       href: '/dashboard/transactions',   icon: BarChart3 },
-    // { label: 'Reports',            href: '/dashboard/reports',        icon: FileText },
-    // { label: 'Audit Log',          href: '/dashboard/audit-log',      icon: ClipboardList },
-    // { label: 'Process Sale',            href: '/dashboard/process-sale',        icon: CreditCard },
+    { label: 'Store',     href: '/dashboard',           icon: Store,        exact: true  },
+    { label: 'Products',  href: '/dashboard/products',  icon: Package,      exact: false },
+    { label: 'Inventory', href: '/dashboard/inventory', icon: Boxes,        exact: false },
+    { label: 'Profile',   href: '/dashboard/profile',   icon: UserCircle2,  exact: false },
 ];
 
 export default function Sidebar() {
@@ -64,7 +53,7 @@ export default function Sidebar() {
             <aside
                 className={`hidden md:flex fixed top-0 left-0 h-screen ${
                     collapsed ? 'w-20' : 'w-64'
-                } bg-(--txt-clr) text-(--pry-clr) flex-col z-40 transition-all duration-300 border-r border-(--sec-clr)`}
+                } bg-(--txt-clr) text-(--pry-clr) flex-col z-40 transition-all duration-300 border-r border-(--sec-clr) overflow-hidden`}
             >
                 {/* Logo + Toggle */}
                 <div
@@ -108,7 +97,9 @@ export default function Sidebar() {
                 {/* Nav Items */}
                 <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
                     {navItems.map(({ label, href, icon: Icon, exact }) => {
-                        const isActive = exact ? pathname === href : pathname.startsWith(href);
+                        const isActive = exact
+                            ? pathname === href || pathname === href + '/'
+                            : pathname.startsWith(href);
                         return (
                             <Link
                                 key={href}
@@ -121,7 +112,6 @@ export default function Sidebar() {
                                         : 'text-(--sec-clr) hover:text-(--pry-clr) hover:bg-gray-50'
                                 }`}
                             >
-                                {/* Left bar indicator */}
                                 {isActive && !collapsed && (
                                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-(--acc-clr)" />
                                 )}
@@ -132,11 +122,6 @@ export default function Sidebar() {
                                     <span className={`text-sm ${isActive ? 'font-semibold text-(--pry-clr)' : 'font-medium'}`} style={{ fontFamily: 'var(--sec-ff)' }}>
                                         {label}
                                     </span>
-                                )}
-                                {collapsed && (
-                                    <div className="absolute left-full ml-3 px-2 py-1 bg-(--pry-clr) text-(--txt-clr) text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                                        {label}
-                                    </div>
                                 )}
                             </Link>
                         );
@@ -178,11 +163,6 @@ export default function Sidebar() {
                                 Logout
                             </span>
                         )}
-                        {collapsed && (
-                            <div className="absolute left-full ml-3 px-2 py-1 bg-(--pry-clr) text-(--txt-clr) text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                                Logout
-                            </div>
-                        )}
                     </button>
                 </div>
             </aside>
@@ -191,7 +171,9 @@ export default function Sidebar() {
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-(--txt-clr) border-t border-(--sec-clr)">
                 <div className="flex justify-around items-center py-2 px-2">
                     {navItems.slice(0, 5).map(({ label, href, icon: Icon, exact }) => {
-                        const isActive = exact ? pathname === href : pathname.startsWith(href);
+                        const isActive = exact
+                            ? pathname === href || pathname === href + '/'
+                            : pathname.startsWith(href);
                         return (
                             <Link
                                 key={href}
