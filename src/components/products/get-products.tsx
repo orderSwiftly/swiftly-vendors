@@ -206,44 +206,46 @@ export default function GetProducts({ storeId, storeName }: Readonly<GetProducts
                     </div>
 
                     {/* Mobile Cards */}
-                    <div className="flex flex-col gap-3 md:hidden">
-                        {paginatedProducts.map((product) => (
-                            <div key={product.id} className="p-4 rounded-xl border border-gray-200 flex flex-col gap-3">
-                                <div className="flex items-center gap-3">
-                                    {product.images_url?.[0] ? (
-                                        <img
-                                            src={product.images_url[0]}
-                                            alt={product.name}
-                                            className="w-12 h-12 rounded-xl object-cover shrink-0 border border-gray-100"
-                                        />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-xl bg-(--pry-clr)/10 flex items-center justify-center shrink-0">
-                                            <Package size={18} className="text-(--pry-clr)/40" />
-                                        </div>
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-(--pry-clr) sec-ff truncate">{product.name}</p>
-                                        <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">SKU: {product.sku}</p>
-                                    </div>
-                                    <span className={`text-xs px-2 py-1 rounded-md font-medium sec-ff shrink-0 ${
-                                        product.is_active
-                                            ? "bg-green-500/10 text-green-600"
-                                            : "bg-gray-200 text-gray-500"
-                                    }`}>
-                                        {product.is_active ? "Active" : "Inactive"}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                                    <span className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-600 sec-ff font-medium">
-                                        {product.category}
-                                    </span>
-                                    <span className="text-sm font-semibold text-(--pry-clr) sec-ff">
-                                        ₦{Number(product.price).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+{/* Mobile Cards */}
+<div className="flex flex-col gap-3 md:hidden">
+    {paginatedProducts.map((product) => (
+        <div key={product.id} className="p-4 rounded-xl border border-gray-200 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+                {product.images_url?.[0] ? (
+                    <img
+                        src={product.images_url[0]}
+                        alt={product.name}
+                        className="w-12 h-12 rounded-xl object-cover shrink-0 border border-gray-100"
+                    />
+                ) : (
+                    <div className="w-12 h-12 rounded-xl bg-(--pry-clr)/10 flex items-center justify-center shrink-0">
+                        <Package size={18} className="text-(--pry-clr)/40" />
                     </div>
+                )}
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-(--pry-clr) sec-ff truncate">{product.name}</p>
+                    <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">SKU: {product.sku}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-md font-medium sec-ff shrink-0 ${
+                    product.is_active
+                        ? "bg-green-500/10 text-green-600"
+                        : "bg-gray-200 text-gray-500"
+                }`}>
+                    {product.is_active ? "Active" : "Inactive"}
+                </span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-600 sec-ff font-medium">
+                    {product.category}
+                </span>
+                <span className="text-sm font-semibold text-(--pry-clr) sec-ff">
+                    ₦{Number(product.price).toLocaleString()}
+                </span>
+                <EditProduct product={product} onEdited={loadProducts} />  {/* ← added */}
+            </div>
+        </div>
+    ))}
+</div>
 
                     {/* Pagination */}
                     {totalPages > 1 && (

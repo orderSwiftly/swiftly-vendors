@@ -15,7 +15,7 @@ interface GetInventoryProps {
 
 const ITEMS_PER_PAGE = 10;
 
-export default function GetInventory({ locationId, locationName }: GetInventoryProps) {
+export default function GetInventory({ locationId, locationName }: Readonly<GetInventoryProps>) {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");

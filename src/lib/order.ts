@@ -1,5 +1,3 @@
-// src/lib/order.ts
-
 import { api } from "@/utils/api";
 import { AxiosError } from "axios";
 
@@ -44,12 +42,16 @@ export interface Order {
     paymentConfirmedAt: string;
 }
 
-export const getConfirmedOrders = async (storeId: string): Promise<Order[]> => {
+export const getOrders = async (storeId: string): Promise<Order[]> => {
     try {
-        const response = await api.get(`/stores/${storeId}/orders/confirmed`);
-        return response.data.orders;
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        const response = await api.get(`/stores/${storeId}/orders`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data.orders ?? [];
     } catch (err) {
         const error = err as AxiosError<{ message: string }>;
-        throw new Error(error.response?.data?.message || "Failed to fetch confirmed orders.");
+        throw new Error(error.response?.data?.message || "Failed to fetch orders.");
     }
 };

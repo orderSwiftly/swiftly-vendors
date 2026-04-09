@@ -16,6 +16,7 @@ interface StoreLocation {
 interface StoreData {
     id: string;
     name: string;
+    image_url: string | null;
     is_active: boolean;
     locations: StoreLocation[];
     products_count?: number;
@@ -140,29 +141,47 @@ function StoreGrid({
 function StoreItem({ store }: { store: StoreData }) {
     return (
         <Link href="/dashboard/store-location">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col gap-3 cursor-pointer hover:border-(--prof-clr) hover:shadow-sm transition-all">
-                <div>
-                    <h3 className="font-semibold text-gray-800">{store.name}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                        {store.locations?.length ?? 0} location{store.locations?.length !== 1 ? "s" : ""}
-                    </p>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                            store.is_active
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-500"
-                        }`}
-                    >
-                        {store.is_active ? "Active" : "Inactive"}
-                    </span>
-                    {store.products_count !== undefined && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
-                            {store.products_count} products
+            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden cursor-pointer hover:border-(--prof-clr) hover:shadow-sm transition-all">
+
+                {/* Store image / fallback banner */}
+                {store.image_url ? (
+                    <img
+                        src={store.image_url}
+                        alt={store.name}
+                        className="w-full h-28 object-cover"
+                    />
+                ) : (
+                    <div className="w-full h-28 bg-gray-100 flex items-center justify-center">
+                        <Store size={28} className="text-gray-300" />
+                    </div>
+                )}
+
+                {/* Card body */}
+                <div className="p-4 flex flex-col gap-3">
+                    <div>
+                        <h3 className="font-semibold text-gray-800">{store.name}</h3>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                            {store.locations?.length ?? 0} location{store.locations?.length !== 1 ? "s" : ""}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                store.is_active
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-500"
+                            }`}
+                        >
+                            {store.is_active ? "Active" : "Inactive"}
                         </span>
-                    )}
+                        {store.products_count !== undefined && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                                {store.products_count} products
+                            </span>
+                        )}
+                    </div>
                 </div>
+
             </div>
         </Link>
     );

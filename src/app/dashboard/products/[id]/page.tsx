@@ -15,7 +15,7 @@ export default async function ProductViewPage({ params }: Readonly<Props>) {
   const { id } = await params;
 
   return (
-    <main className="p-6 max-w-6xl mx-auto mb-14">
+    <main className="p-6 max-w-6xl mx-auto mb-18">
       <ProductsPageClient storeId={id} />
     </main>
   );

@@ -14,6 +14,7 @@ export interface Store {
     id: string;
     name: string;
     store_name?: string;
+    image_url: string | null;
     is_active: boolean;
     locations: StoreLocation[];
 }
