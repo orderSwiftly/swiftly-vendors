@@ -55,3 +55,16 @@ export const getOrders = async (storeId: string): Promise<Order[]> => {
         throw new Error(error.response?.data?.message || "Failed to fetch orders.");
     }
 };
+
+export const shipOrder = async (orderId: string): Promise<void> => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        await api.patch(`/orders/${orderId}/ship`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    } catch (err) {
+        const error = err as AxiosError<{ message: string }>;
+        throw new Error(error.response?.data?.message || "Failed to ship order.");
+    }
+};

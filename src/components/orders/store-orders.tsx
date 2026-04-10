@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Store } from "@/lib/store";
 import { getOrders, Order } from "@/lib/order";
@@ -38,11 +38,13 @@ export default function StoreOrders({ store, colorClass, onBack }: Readonly<Stor
     const orders = isCurrent ? ordersState.data : [];
     const error = isCurrent ? ordersState.error : null;
 
-    useEffect(() => {
+    const fetchOrders = useCallback(() => {
         getOrders(store.id)
             .then(data => setOrdersState({ storeId: store.id, data, error: null, fetched: true }))
             .catch(err => setOrdersState({ storeId: store.id, data: [], error: err.message, fetched: true }));
     }, [store.id]);
+
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
     return (
         <div className="w-full">
@@ -80,7 +82,7 @@ export default function StoreOrders({ store, colorClass, onBack }: Readonly<Stor
                 </span>
             </div>
 
-            <OrderTab orders={orders} loading={loading} error={error} />
+            <OrderTab orders={orders} loading={loading} error={error} onRefresh={fetchOrders} />
         </div>
     );
 }

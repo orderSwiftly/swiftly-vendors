@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Package, ShoppingBag, MapPin, Hash } from "lucide-react";
 import { Order } from "@/lib/order";
 import Spinner from "../ui/spinner";
+import ShipBtn from "./ship-btn";
 
 // ─── tab definitions ──────────────────────────────────────────────────────────
 
@@ -29,14 +30,14 @@ const EMPTY_MESSAGES: Record<Tab, string> = {
 
 // ─── status config ────────────────────────────────────────────────────────────
 
-export const ORDER_STATUS_STYLES: Record<string, { bar: string; dot: string }> = {
-    pending:               { bar: "border-amber-200 text-amber-700",   dot: "bg-amber-400" },
-    confirmed:             { bar: "border-green-200 text-green-700",   dot: "bg-green-400" },
-    shipped:               { bar: "border-blue-200 text-blue-700",     dot: "bg-blue-400" },
-    awaiting_verification: { bar: "border-amber-200 text-amber-700",   dot: "bg-amber-400" },
-    verified:              { bar: "border-teal-200 text-teal-700",     dot: "bg-teal-400" },
-    delivered:             { bar: "border-emerald-200 text-emerald-700", dot: "bg-emerald-400" },
-    collected:             { bar: "border-purple-200 text-purple-700", dot: "bg-purple-400" },
+export const ORDER_STATUS_STYLES: Record<string, { bar: string; dot: string; badge: string }> = {
+    pending:               { bar: "border-amber-200 text-amber-700",     dot: "bg-amber-400",   badge: "border-amber-200 text-amber-700 bg-amber-50" },
+    confirmed:             { bar: "border-green-200 text-green-700",     dot: "bg-green-400",   badge: "border-green-200 text-green-700 bg-green-50" },
+    shipped:               { bar: "border-blue-200 text-blue-700",       dot: "bg-blue-400",    badge: "border-blue-200 text-blue-700 bg-blue-50" },
+    awaiting_verification: { bar: "border-amber-200 text-amber-700",     dot: "bg-amber-400",   badge: "border-amber-200 text-amber-700 bg-amber-50" },
+    verified:              { bar: "border-teal-200 text-teal-700",       dot: "bg-teal-400",    badge: "border-teal-200 text-teal-700 bg-teal-50" },
+    delivered:             { bar: "border-emerald-200 text-emerald-700", dot: "bg-emerald-400", badge: "border-emerald-200 text-emerald-700 bg-emerald-50" },
+    collected:             { bar: "border-purple-200 text-purple-700",   dot: "bg-purple-400",  badge: "border-purple-200 text-purple-700 bg-purple-50" },
 };
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
@@ -48,6 +49,28 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
     collected:             "Rider has collected the order",
     delivered:             "Order successfully delivered to customer",
 };
+
+// ─── status badge ─────────────────────────────────────────────────────────────
+
+const STATUS_BADGE_LABELS: Record<string, string> = {
+    pending:               "Pending",
+    confirmed:             "Confirmed",
+    shipped:               "Shipped",
+    awaiting_verification: "Awaiting Verification",
+    verified:              "Verified",
+    collected:             "Collected",
+    delivered:             "Delivered",
+};
+
+function StatusBadge({ status }: { status: string }) {
+    const config = ORDER_STATUS_STYLES[status] ?? { badge: "border-gray-200 text-gray-500 bg-gray-50" };
+    const label  = STATUS_BADGE_LABELS[status] ?? status.replace(/_/g, " ");
+    return (
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${config.badge}`}>
+            {label}
+        </span>
+    );
+}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -71,8 +94,8 @@ function formatTime(iso: string) {
 
 // ─── order card ───────────────────────────────────────────────────────────────
 
-function OrderCard({ order }: Readonly<{ order: Order }>) {
-    const statusConfig = ORDER_STATUS_STYLES[order.orderStatus] ?? { bar: "border-gray-200 text-gray-500", dot: "bg-gray-300" };
+function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () => void }>) {
+    const statusConfig = ORDER_STATUS_STYLES[order.orderStatus] ?? { bar: "border-gray-200 text-gray-500", dot: "bg-gray-300", badge: "border-gray-200 text-gray-500 bg-gray-50" };
     const statusLabel  = ORDER_STATUS_LABELS[order.orderStatus] ?? order.orderStatus.replace(/_/g, " ");
     const shortId      = order._id.slice(-8).toUpperCase();
     const totalQty     = order.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -109,7 +132,6 @@ function OrderCard({ order }: Readonly<{ order: Order }>) {
                             </div>
                         )
                     ))}
-                    {/* if no items at all */}
                     {order.items.length === 0 && (
                         <div className="flex-1 w-full border-r border-gray-100 flex items-center justify-center">
                             <Package size={18} className="text-gray-200" />
@@ -162,13 +184,20 @@ function OrderCard({ order }: Readonly<{ order: Order }>) {
                 </div>
             </div>
 
-            {/* ── footer: order id + date + delivery code ── */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100">
-                <div className="flex items-center gap-1.5">
-                    <Hash size={11} className="text-gray-300" />
+            {/* ── footer: order id + date + status badge + action ── */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 gap-3">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <Hash size={11} className="text-gray-300 flex-shrink-0" />
                     <span className="text-[11px] font-mono text-gray-400">{shortId}</span>
                     <span className="text-gray-200 text-xs mx-1">·</span>
-                    <span className="text-[11px] text-gray-400">{formatDate(order.createdAt)}</span>
+                    <span className="text-[11px] text-gray-400 flex-shrink-0">{formatDate(order.createdAt)}</span>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <StatusBadge status={order.orderStatus} />
+                    {order.orderStatus === "confirmed" && (
+                        <ShipBtn orderId={order._id} onShipped={onRefresh} />
+                    )}
                 </div>
             </div>
         </div>
@@ -194,9 +223,10 @@ interface OrderTabProps {
     orders: Order[];
     loading: boolean;
     error: string | null;
+    onRefresh: () => void;
 }
 
-export default function OrderTab({ orders, loading, error }: Readonly<OrderTabProps>) {
+export default function OrderTab({ orders, loading, error, onRefresh }: Readonly<OrderTabProps>) {
     const [activeTab, setActiveTab] = useState<Tab>("Orders");
     const tabOrders = filterByTab(orders, activeTab);
 
@@ -245,7 +275,7 @@ export default function OrderTab({ orders, loading, error }: Readonly<OrderTabPr
             ) : (
                 <div className="flex flex-col gap-3">
                     {tabOrders.map(order => (
-                        <OrderCard key={order._id} order={order} />
+                        <OrderCard key={order._id} order={order} onRefresh={onRefresh} />
                     ))}
                 </div>
             )}
