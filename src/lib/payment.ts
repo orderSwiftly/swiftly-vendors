@@ -9,6 +9,12 @@ export interface CreateSubaccount {
     account_bank: string;
 }
 
+// set store subaccount interface
+export interface SetStoreSubaccount {
+    store_id: string;
+    subaccount_id: string;
+}
+
 export const listBanks = async () => {
     try {
         const token = localStorage.getItem('token');
@@ -80,6 +86,44 @@ export const listSubaccounts = async () => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(error.response?.data?.message || 'Failed to fetch subaccounts');
+        }
+        throw new Error('An unexpected error occurred');
+    }
+}
+
+export const setStoreSubaccount = async (data: SetStoreSubaccount) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Authentication token not found');
+
+        const response = await api.patch('/subaccounts/set-store', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to set store subaccount');
+        }
+        throw new Error('An unexpected error occurred');
+    }
+}
+
+export const deleteSubaccount = async (subaccount_Id: string) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Authentication token not found');
+
+        const response = await api.delete(`/subaccounts/${subaccount_Id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`   
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || 'Failed to delete subaccount');
         }
         throw new Error('An unexpected error occurred');
     }

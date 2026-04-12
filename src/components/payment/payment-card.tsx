@@ -1,11 +1,11 @@
-// src/components/payment/payment-card.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { listSubaccounts } from "@/lib/payment";
+import { listSubaccounts, deleteSubaccount } from "@/lib/payment";
 import { toast } from "sonner";
 import CreateAccountButton from "@/components/payment/create-acct-btn";
+import SetAccount from "@/components/payment/set-account";
+import DeleteAcctBtn from "@/components/payment/del-acct-btn";
 import { Landmark, CreditCard, Loader2 } from "lucide-react";
 
 export interface Store {
@@ -26,6 +26,7 @@ export default function PaymentCard() {
     const [accounts, setAccounts] = useState<Subaccount[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const fetchAccounts = async () => {
         setLoading(true);
@@ -45,16 +46,33 @@ export default function PaymentCard() {
         fetchAccounts();
     }, []);
 
+    const handleDelete = async (accountId: string) => {
+        setDeletingId(accountId);
+        try {
+            await deleteSubaccount(accountId);
+            toast.success("Bank account deleted successfully");
+            await fetchAccounts(); // Refresh the list
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to delete bank account");
+            throw error; // Re-throw so the modal knows it failed
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
         <section className="w-full flex flex-col gap-6">
 
-            {/* Header */}
-            <div className="flex items-center justify-between w-full">
+            {/* Header with Set Account Button */}
+            <div className="flex items-center justify-between w-full flex-wrap gap-4">
                 <div className="flex flex-col gap-0.5">
                     <h1 className="text-(--pry-clr) font-semibold text-xl pry-ff">Payment Accounts</h1>
                     <p className="text-sm text-(--prof-clr) pry-ff">Manage your linked bank accounts</p>
                 </div>
-                <CreateAccountButton onSuccess={fetchAccounts} />
+                <div className="flex gap-3">
+                    <SetAccount onSuccess={fetchAccounts} />
+                    <CreateAccountButton onSuccess={fetchAccounts} />
+                </div>
             </div>
 
             {/* Loading */}
@@ -107,21 +125,29 @@ export default function PaymentCard() {
                                 </div>
                             </div>
 
-                            {/* Right — date + store tags */}
+                            {/* Right — date + store tags + delete button */}
                             <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-                                <p className="text-(--prof-clr) text-xs">
-                                    Added {new Date(account.created_at).toLocaleDateString("en-NG", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                    })}
-                                </p>
-                                {account.stores.length > 0 && (
+                                <div className="flex items-center gap-3">
+                                    <p className="text-(--prof-clr) text-xs">
+                                        Added {new Date(account.created_at).toLocaleDateString("en-NG", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                        })}
+                                    </p>
+                                    <DeleteAcctBtn 
+                                        accountId={account.id}
+                                        accountName={account.account_name}
+                                        onDelete={handleDelete}
+                                        isDeleting={deletingId === account.id}
+                                    />
+                                </div>
+                                {account.stores && account.stores.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5">
                                         {account.stores.map((store) => (
                                             <span
                                                 key={store.id}
-                                                className="px-2.5 py-0.5 rounded-full bg-(--acc-clr)/10 text-(--tet-clr) text-xs font-medium"
+                                                className="px-2.5 py-0.5 rounded-full bg-(--acc-clr)/10 text-(--acc-clr) text-xs font-medium"
                                             >
                                                 {store.name}
                                             </span>
