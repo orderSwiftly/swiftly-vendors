@@ -10,6 +10,32 @@ const nextConfig: NextConfig = {
             },
         ],
     },
+    // Optional: Proxy for development to avoid CORS
+    async rewrites() {
+        return [
+            {
+                source: '/webpush/:path*',
+                destination: 'https://swiftly-sellers-api.onrender.com/webpush/:path*',
+            },
+        ];
+    },
+    async headers() {
+        return [
+            {
+                source: '/web-push-service-worker.js',
+                headers: [
+                    {
+                        key: 'Service-Worker-Allowed',
+                        value: '/',
+                    },
+                    {
+                        key: 'Content-Type',
+                        value: 'application/javascript',
+                    },
+                ],
+            },
+        ];
+    },
 };
 
 export default nextConfig;
