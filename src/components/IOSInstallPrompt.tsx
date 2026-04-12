@@ -1,7 +1,8 @@
 // src/components/IOSInstallPrompt.tsx
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react';
+import { X } from 'lucide-react';
 
 export function IOSInstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false)
@@ -39,10 +40,10 @@ export function IOSInstallPrompt() {
   if (!showPrompt || !isIOS) return null
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 bg-white rounded-lg shadow-xl p-4 border border-gray-200 z-50">
+    <div className="fixed bottom-4 left-4 right-4 bg-(--txt-clr) rounded-lg shadow-xl p-4 border border-gray-200 z-50">
       <div className="flex justify-between items-start">
         <div>
-          <h4 className="font-semibold mb-1">Install Our App</h4>
+          <h4 className="font-semibold mb-1">Install Swiftly IMS</h4>
           <p className="text-sm text-gray-600">
             For the best experience with push notifications, install our app:
           </p>
@@ -52,8 +53,8 @@ export function IOSInstallPrompt() {
             <li>Tap &apos;Add&apos;</li>
           </ol>
         </div>
-        <button onClick={handleDismiss} className="text-gray-400 hover:text-gray-600">
-          ✕
+        <button onClick={handleDismiss} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+          <X size={20} />
         </button>
       </div>
     </div>

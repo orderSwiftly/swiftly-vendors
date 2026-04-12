@@ -135,7 +135,7 @@ export function PWAInstallBanner() {
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h4 className="font-semibold text-gray-900">Install Swiftly</h4>
+                <h4 className="font-semibold text-gray-900">Install Swiftly IMS</h4>
                 <p className="text-sm text-gray-600 mt-0.5">
                   Get push notifications and quick access
                 </p>
