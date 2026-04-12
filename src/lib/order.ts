@@ -28,6 +28,8 @@ export interface Order {
     _id: string;
     userId: string;
     store_id: string;
+    store_name: string;
+    store_address: string;
     reservation_group_id: string;
     items: OrderItem[];
     pricing: OrderPricing;
@@ -66,5 +68,23 @@ export const shipOrder = async (orderId: string): Promise<void> => {
     } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         throw new Error(error.response?.data?.message || "Failed to ship order.");
+    }
+};
+
+
+export const getOrderById = async (orderId: string): Promise<Order | null> => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        
+        const response = await api.get(`/orders/${orderId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        return response.data.order || response.data;
+    } catch (err) {
+        const error = err as AxiosError<{ message: string }>;
+        console.error('Error fetching order:', error.response?.data?.message || error.message);
+        return null;
     }
 };

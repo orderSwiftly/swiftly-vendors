@@ -1,3 +1,5 @@
+// src/components/orders/order-tab.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -5,6 +7,7 @@ import { Package, ShoppingBag, MapPin, Hash } from "lucide-react";
 import { Order } from "@/lib/order";
 import Spinner from "../ui/spinner";
 import ShipBtn from "./ship-btn";
+import Link from "next/link";
 
 // ─── tab definitions ──────────────────────────────────────────────────────────
 
@@ -185,21 +188,30 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
             </div>
 
             {/* ── footer: order id + date + status badge + action ── */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 gap-3">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <Hash size={11} className="text-gray-300 flex-shrink-0" />
-                    <span className="text-[11px] font-mono text-gray-400">{shortId}</span>
-                    <span className="text-gray-200 text-xs mx-1">·</span>
-                    <span className="text-[11px] text-gray-400 flex-shrink-0">{formatDate(order.createdAt)}</span>
-                </div>
+<div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 gap-3">
+    <div className="flex items-center gap-1.5 min-w-0">
+        <Hash size={11} className="text-gray-300 flex-shrink-0" />
+        <span className="text-[11px] font-mono text-gray-400">{shortId}</span>
+        <span className="text-gray-200 text-xs mx-1">·</span>
+        <span className="text-[11px] text-gray-400 flex-shrink-0">{formatDate(order.createdAt)}</span>
+    </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                    <StatusBadge status={order.orderStatus} />
-                    {order.orderStatus === "confirmed" && (
-                        <ShipBtn orderId={order._id} onShipped={onRefresh} />
-                    )}
-                </div>
-            </div>
+    <div className="flex items-center gap-2 flex-shrink-0">
+        <StatusBadge status={order.orderStatus} />
+        
+        {/* Add View Details link */}
+        <Link
+            href={`/dashboard/profile/orders/${order._id}`}
+            className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+            View Details
+        </Link>
+        
+        {order.orderStatus === "confirmed" && (
+            <ShipBtn orderId={order._id} onShipped={onRefresh} />
+        )}
+    </div>
+</div>
         </div>
     );
 }

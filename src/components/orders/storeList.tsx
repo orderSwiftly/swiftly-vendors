@@ -1,3 +1,5 @@
+// src/components/orders/storeList.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
