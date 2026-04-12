@@ -96,7 +96,10 @@ export const setStoreSubaccount = async (data: SetStoreSubaccount) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('Authentication token not found');
 
-        const response = await api.patch('/subaccounts/set-store', data, {
+        // Fix: Use the correct endpoint with store_id in the URL
+        const response = await api.patch(`/stores/${data.store_id}/subaccounts`, {
+            subaccount_id: data.subaccount_id
+        }, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

@@ -118,7 +118,7 @@ export default function SetAccount({ onSuccess }: SetAccountProps) {
         return (
             <button
                 disabled
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-(--sec-clr)/20 text-(--sec-clr) cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-(--sec-clr)/20 text-(--sec-clr) cursor-not-allowed sec-ff"
             >
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading stores...
@@ -140,7 +140,7 @@ export default function SetAccount({ onSuccess }: SetAccountProps) {
     }
 
     return (
-        <div className="relative">
+        <div className="relative sec-ff">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-(--acc-clr) text-(--txt-clr) hover:opacity-80 transition-all"
