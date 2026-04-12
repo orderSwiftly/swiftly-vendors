@@ -31,7 +31,6 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
             setError(null);
             try {
                 const [storesData, profileData] = await Promise.all([getStores(), getProfile()]);
-                // getStores already returns Store[] directly
                 setStores(storesData);
                 setProfile(profileData);
             } catch (err: unknown) {
@@ -149,7 +148,7 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                     onSuccess={handleStoreEditSuccess}
                 />
             )}
-            <div className="flex flex-col gap-6 sec-ff w-max-3xl mb-18">
+            <div className="flex flex-col gap-6 sec-ff w-full max-w-3xl mb-18">
                 {stores.map((store) => (
                     <StoreBlock
                         key={store.id}
@@ -254,13 +253,14 @@ function StoreBlock({
                     }}
                 />
             )}
-            <div className="border border-gray-200 rounded-xl bg-white p-6">
-                <div className="flex items-start justify-between mb-4">
+            <div className="border border-gray-200 rounded-xl bg-white p-4 md:p-6">
+                {/* Store header */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
                     <div>
                         <h2 className="text-base font-semibold text-gray-800">{store.name}</h2>
                         <p className="text-xs text-gray-400 mt-0.5">Owner: {ownerName ?? "—"}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <button
                             onClick={onEditName}
                             className="text-sm border border-gray-200 rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors"
@@ -287,6 +287,7 @@ function StoreBlock({
                     </div>
                 </div>
 
+                {/* Locations */}
                 <div>
                     <p className="text-sm font-medium text-gray-700 mb-3">Locations</p>
                     <div className="flex flex-col gap-2">
@@ -358,13 +359,22 @@ function LocationRow({
     };
 
     return (
-        <div className={`flex items-center justify-between p-6 border rounded-lg transition-colors ${isOnlyActive ? "border-red-200 bg-red-50/50" : "border-gray-200"}`}>
-            <div>
-                <p className="text-sm text-gray-800 font-semibold">{location.name}</p>
-                <p className="text-xs mt-0.5 text-gray-400">{location.address}</p>
+        <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 md:p-6 border rounded-lg transition-colors ${isOnlyActive ? "border-red-200 bg-red-50/50" : "border-gray-200"}`}>
+            {/* Location info */}
+            <div className="flex items-center justify-between sm:block">
+                <div>
+                    <p className="text-sm text-gray-800 font-semibold">{location.name}</p>
+                    <p className="text-xs mt-0.5 text-gray-400">{location.address}</p>
+                </div>
+                {/* Badge visible inline on mobile, hidden on sm+ (shown in actions row) */}
+                <span className={`sm:hidden text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
+                    {active ? "Active" : "Inactive"}
+                </span>
             </div>
-            <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 flex-wrap">
+                <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
                     {active ? "Active" : "Inactive"}
                 </span>
                 <button
