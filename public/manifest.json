@@ -2,7 +2,7 @@
   "id": "/auth",
   "name": "Swiftly IMS",
   "short_name": "Swiftly IMS",
-  "start_url": "/login",
+  "start_url": "/auth",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
