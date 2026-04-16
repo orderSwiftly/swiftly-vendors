@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { PWAInstallBanner } from '@/components/PWAInstallBanner'
+import { PWAInstallBanner } from '@/components/PWAInstallBanner';
+import { Toaster } from "sonner";
 
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegistration />
         <PWAInstallBanner />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

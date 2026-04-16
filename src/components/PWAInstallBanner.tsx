@@ -128,7 +128,7 @@ export function PWAInstallBanner() {
     <div className="fixed bottom-0 left-0 right-0 bg-(--txt-clr) border-t border-gray-200 shadow-lg z-50 animate-in slide-in-from-bottom-2 duration-300 md:bottom-4 md:left-4 md:right-auto md:rounded-xl md:max-w-md sec-ff">
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <div className="shrink-0 w-10 h-10 bg-(--tet-clr) rounded-lg flex items-center justify-center">
+          <div className="shrink-0 w-10 h-10 bg-(--prof-clr) rounded-lg flex items-center justify-center">
             <Download size={20} className="text-(--txt-clr)" />
           </div>
           
@@ -151,7 +151,7 @@ export function PWAInstallBanner() {
             
             <button
               onClick={handleInstall}
-              className="mt-3 w-full bg-(--tet-clr) text-(--txt-clr) py-2 rounded-lg text-sm font-medium hover:bg-(--bg-clr) transition-colors cursor-pointer"
+              className="mt-3 w-full bg-(--prof-clr) text-(--txt-clr) py-2 rounded-lg text-sm font-medium hover:bg-(--bg-clr) transition-colors cursor-pointer"
             >
               {isIOS ? 'Show Instructions' : 'Install Now'}
             </button>

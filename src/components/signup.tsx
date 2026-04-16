@@ -1,25 +1,37 @@
-// src/components/signup.tsx
+// src/components/signup.tsx - Simple regex solution
+
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import Spinner from "./ui/spinner";
+import { signupOwner } from "@/lib/auth";
+import { toast } from "sonner";
 
 interface SignupFormProps {
     onSwitchToLogin: () => void;
 }
 
+interface FormData {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    password: string;
+    confirm_password: string;
+}
+
 export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps>) {
-    const router = useRouter();
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [formData, setFormData] = useState<FormData>({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirm_password: "",
+    });
     const [showPw, setShowPw] = useState(false);
     const [showConfirmPw, setShowConfirmPw] = useState(false);
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const inputStyle = {
@@ -29,18 +41,92 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
         border: "1px solid #d1d5db",
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Simple phone formatter for Nigerian numbers
+    const formatPhoneNumber = (phone: string): string => {
+        // Remove all non-digit characters
+        const cleaned = phone.replace(/\D/g, '');
+        
+        // If it starts with 234, remove it and add 0
+        if (cleaned.startsWith('234')) {
+            return '0' + cleaned.slice(3);
+        }
+        
+        // If it already starts with 0, keep as is
+        if (cleaned.startsWith('0')) {
+            return cleaned;
+        }
+        
+        // If it's 10 digits without 0, add 0 at the beginning
+        if (cleaned.length === 10) {
+            return '0' + cleaned;
+        }
+        
+        // Return as is if no match
+        return cleaned;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
-        if (password !== confirmPassword) {
-            setError("Passwords do not match.");
+        
+        if (formData.password !== formData.confirm_password) {
+            toast.error("Passwords do not match.");
             return;
         }
+        
+        if (formData.password.length < 6) {
+            toast.error("Password must be at least 6 characters.");
+            return;
+        }
+        
+        // Format the phone number
+        const formattedPhone = formatPhoneNumber(formData.phone);
+        
+        // Validate Nigerian phone number (11 digits including 0 or 10 digits without 0)
+        const phoneRegex = /^(0[789][01]\d{8}|[789][01]\d{8})$/;
+        if (!phoneRegex.test(formattedPhone)) {
+            toast.error("Please enter a valid Nigerian phone number (e.g., 08031234567 or 8031234567)");
+            return;
+        }
+        
         setLoading(true);
+        
         try {
-            router.push("/dashboard");
+            const signupData = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                email: formData.email,
+                phone: formattedPhone, // Will be like "07080973923" or "08031234567"
+                password: formData.password,
+                confirm_password: formData.confirm_password,
+            };
+            
+            // console.log('Sending signup data:', signupData);
+            
+            await signupOwner(signupData);
+            
+            toast.success("Account created successfully! Please login.");
+            
+            // Reset form
+            setFormData({
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+                password: "",
+                confirm_password: "",
+            });
+            
+            // Switch to login mode
+            onSwitchToLogin();
+            
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Sign up failed.");
+            const errorMessage = err instanceof Error ? err.message : "Sign up failed.";
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -48,17 +134,18 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* First + Last name — stacked on mobile, side by side on sm+ */}
+            {/* First + Last name fields */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex flex-col gap-1.5 flex-1">
-                    <label htmlFor="first-name" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                    <label htmlFor="first_name" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         First Name
                     </label>
                     <input
-                        id="first-name"
+                        id="first_name"
+                        name="first_name"
                         type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        value={formData.first_name}
+                        onChange={handleChange}
                         required
                         placeholder="John"
                         className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
@@ -68,14 +155,15 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                     />
                 </div>
                 <div className="flex flex-col gap-1.5 flex-1">
-                    <label htmlFor="last-name" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                    <label htmlFor="last_name" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         Last Name
                     </label>
                     <input
-                        id="last-name"
+                        id="last_name"
+                        name="last_name"
                         type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        value={formData.last_name}
+                        onChange={handleChange}
                         required
                         placeholder="Doe"
                         className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
@@ -86,15 +174,17 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                 </div>
             </div>
 
+            {/* Email field */}
             <div className="flex flex-col gap-1.5">
-                <label htmlFor="signup-email" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                <label htmlFor="email" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                     Email
                 </label>
                 <input
-                    id="signup-email"
+                    id="email"
+                    name="email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                     placeholder="you@company.com"
                     className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
@@ -104,22 +194,43 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                 />
             </div>
 
-            {/* Password + Confirm — stacked on mobile, side by side on sm+ */}
+            {/* Phone Number field */}
+            <div className="flex flex-col gap-1.5">
+                <label htmlFor="phone" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                    Phone Number
+                </label>
+                <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    placeholder="08031234567 or 8031234567"
+                    className="rounded-lg px-4 py-2.5 text-sm outline-none transition-colors w-full"
+                    style={inputStyle}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+                />
+            </div>
+
+            {/* Password fields */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex flex-col gap-1.5 flex-1">
-                    <label htmlFor="signup-password" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                    <label htmlFor="password" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         Enter Password
                     </label>
                     <div className="relative">
                         <input
-                            id="signup-password"
+                            id="password"
+                            name="password"
                             type={showPw ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={formData.password}
+                            onChange={handleChange}
                             required
-                            placeholder="At least 8 characters"
+                            placeholder="At least 6 characters"
                             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors pr-10"
-                            style={{ ...inputStyle, color: "var(--prof-clr)" }}
+                            style={inputStyle}
                             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
                             onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
                         />
@@ -129,19 +240,20 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                     </div>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-1">
-                    <label htmlFor="confirm-password" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
+                    <label htmlFor="confirm_password" className="text-sm font-medium" style={{ fontFamily: "var(--sec-ff)", color: "var(--pry-clr)" }}>
                         Confirm Password
                     </label>
                     <div className="relative">
                         <input
-                            id="confirm-password"
+                            id="confirm_password"
+                            name="confirm_password"
                             type={showConfirmPw ? "text" : "password"}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            value={formData.confirm_password}
+                            onChange={handleChange}
                             required
-                            placeholder="At least 8 characters"
+                            placeholder="At least 6 characters"
                             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors pr-10"
-                            style={{ ...inputStyle, color: "var(--prof-clr)" }}
+                            style={inputStyle}
                             onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
                             onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
                         />
@@ -151,8 +263,6 @@ export default function SignupForm({ onSwitchToLogin }: Readonly<SignupFormProps
                     </div>
                 </div>
             </div>
-
-            {error && <p className="text-sm text-red-500" style={{ fontFamily: "var(--sec-ff)" }}>{error}</p>}
 
             <button
                 type="submit"

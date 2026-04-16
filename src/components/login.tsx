@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { loginOwner } from "@/lib/auth";
 import { Eye, EyeOff } from "lucide-react";
 import Spinner from "./ui/spinner";
+import { toast } from "sonner";
 
 interface LoginFormProps {
     onSwitchToSignup: () => void;
@@ -16,19 +17,19 @@ export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPw, setShowPw] = useState(false);
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError("");
         setLoading(true);
         try {
             const data = await loginOwner(email, password);
             localStorage.setItem("token", data.token);
+            toast.success("Login successful! Redirecting...");
             router.push("/dashboard");
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Login failed.");
+            const errorMessage = err instanceof Error ? err.message : "Login failed.";
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -65,7 +66,7 @@ export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        placeholder="At least 8 characters"
+                        placeholder="At least 6 characters"
                         className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors pr-10"
                         style={{ fontFamily: "var(--sec-ff)", backgroundColor: "var(--txt-clr)", color: "var(--pry-clr)", border: "1px solid #d1d5db" }}
                         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--acc-clr)")}
@@ -90,8 +91,6 @@ export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>
             >
                 Forgot Password?
             </button>
-
-            {error && <p className="text-sm text-red-500" style={{ fontFamily: "var(--sec-ff)" }}>{error}</p>}
 
             <button
                 type="submit"
