@@ -265,7 +265,7 @@ function StoreBlock({
                             onClick={onEditName}
                             className="text-sm border border-gray-200 rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors"
                         >
-                            Edit Name
+                            Edit Store
                         </button>
                         {store.is_active ? (
                             <button

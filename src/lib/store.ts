@@ -186,3 +186,36 @@ export const addLocation = async (storeId: string, locations: AddLocationBody[])
         throw new Error("An unexpected error occurred.");
     }
 };
+
+// src/lib/store.ts
+
+// src/lib/store.ts
+
+export const uploadStoreImage = async (storeId: string, photo: File) => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
+        const formData = new FormData();
+        formData.append("photo", photo);
+
+        // Option 1: Let axios handle everything without manually setting headers
+        const res = await api.patch(`/stores/${storeId}/image`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                // Remove any Content-Type headers completely
+            },
+            // Ensure axios doesn't transform the data
+            transformRequest: [(data) => data],
+        });
+        
+        // console.log("Upload success:", res.data);
+        return res.data;
+    } catch (error) {
+        // console.error("Upload error:", error);
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || "Failed to upload store image.");
+        }
+        throw new Error("An unexpected error occurred.");
+    }
+};
