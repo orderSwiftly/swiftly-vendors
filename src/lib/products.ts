@@ -114,3 +114,17 @@ export const uploadProductImage = async (
         throw new Error("An unexpected error occurred.");
     }
 };
+
+// get categories
+export const fetchCategories = async (): Promise<string[]> => {
+    try {
+        const response = await api.get("/categories");
+        // The response has { categories: [...] } structure
+        return Array.isArray(response.data?.categories) ? response.data.categories : [];
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(error.response?.data?.message || "Failed to fetch categories.");
+        }
+        throw new Error("An unexpected error occurred.");
+    }
+}

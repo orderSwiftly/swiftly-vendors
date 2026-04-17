@@ -6,6 +6,7 @@ import { useState } from "react";
 import { X, Plus, Loader2, Package, Tag, DollarSign, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, type ProductInput } from "@/lib/products";
+import GetCategories from "./get-categories";
 
 interface CreateProductProps {
     storeId: string;
@@ -30,6 +31,13 @@ export default function CreateProduct({ storeId, onCreated }: Readonly<CreatePro
         setForm((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
+        }));
+    };
+
+    const handleCategorySelect = (category: string) => {
+        setForm((prev) => ({
+            ...prev,
+            category: category,
         }));
     };
 
@@ -146,14 +154,8 @@ export default function CreateProduct({ storeId, onCreated }: Readonly<CreatePro
                                         <Tag size={12} />
                                         Category
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="category"
-                                        value={form.category}
-                                        onChange={handleChange}
-                                        placeholder="e.g. Food"
-                                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors placeholder:text-(--pry-clr)/30"
-                                    />
+                                    {/* Replace the manual input with GetCategories component */}
+                                    <GetCategories onSelectCategory={handleCategorySelect} selectedCategory={form.category} />
                                 </div>
                             </div>
 
