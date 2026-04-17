@@ -119,7 +119,7 @@ export default function GetStaff({ storeId: propStoreId }: Readonly<GetStaffProp
                         {search ? (
                             <p className="text-sm text-(--pry-clr)/50 sec-ff">No staff match &ldquo;{search}&rdquo;.</p>
                         ) : (
-                            <div>
+                            <div className="flex items-center justify-center flex-col">
                                 <p className="text-sm text-(--pry-clr)/70 sec-ff mb-3">
                                     No staff members found for this store.
                                 </p>
