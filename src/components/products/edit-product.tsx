@@ -307,8 +307,8 @@ export default function EditProduct({ product, onEdited }: Readonly<EditProductP
                                         onChange={handleChange}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-10 h-5 bg-gray-200 peer-checked:bg-(--pry-clr) rounded-full transition-colors" />
-                                    <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
+                                    <div className="w-10 h-5 bg-gray-200 peer-checked:bg-(--prof-clr) rounded-full transition-colors" />
+                                    <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-(--txt-clr) rounded-full shadow transition-transform peer-checked:translate-x-5" />
                                 </label>
                             </div>
                         </div>
