@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Mail, User, Shield, BadgeCheck, Building2, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { getProfile, type Profile } from "@/lib/profile";
+import Link from "next/link";
 
 export default function ProfileComponent() {
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -126,9 +127,9 @@ export default function ProfileComponent() {
                                         <p className="text-xs text-(--pry-clr)/40 sec-ff">Contact support for account assistance</p>
                                     </div>
                                 </div>
-                                <button className="px-4 py-2 text-sm font-medium text-(--pry-clr) border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors sec-ff">
+                                <Link href="/dashboard/profile/support" className="px-4 py-2 text-sm font-medium text-(--pry-clr) border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors sec-ff">
                                     Contact Support
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
