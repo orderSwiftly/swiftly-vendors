@@ -128,3 +128,29 @@ export const fetchCategories = async (): Promise<string[]> => {
         throw new Error("An unexpected error occurred.");
     }
 }
+
+// Get product template (CSV format)
+export interface ProductTemplate {
+  name: string;
+  sku: string;
+  price: number | string;
+  category: string;
+  is_active: boolean | string;
+}
+
+export const getProductTemplateRaw = async (): Promise<string> => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/products/template', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch product template');
+    }
+    throw error;
+  }
+};

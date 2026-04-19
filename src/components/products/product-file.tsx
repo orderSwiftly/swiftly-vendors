@@ -4,6 +4,7 @@
 
 import ImportProduct from "./import-product";
 import ExportProduct from "./export-product";
+import GetTemplateComponent from "./get-template";
 import type { Product } from "@/lib/products";
 
 interface ProductFileProps {
@@ -15,9 +16,11 @@ interface ProductFileProps {
 
 export default function ProductFile({ storeId, storeName, products, onImported }: Readonly<ProductFileProps>) {
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-0.5">
             <ImportProduct storeId={storeId} onImported={onImported} />
             <ExportProduct products={products} storeName={storeName} />
+            <div className="h-px bg-gray-200 my-1" /> {/* Separator */}
+            <GetTemplateComponent />
         </div>
     );
 }

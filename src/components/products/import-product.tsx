@@ -57,7 +57,7 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/5 transition-colors"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/5 transition-colors cursor-pointer"
             >
                 <Upload size={15} />
                 Import
@@ -65,7 +65,7 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md p-6 flex flex-col gap-5 shadow-xl">
+                    <div className="bg-(--txt-clr) rounded-2xl border border-gray-200 w-full max-w-md p-6 flex flex-col gap-5 shadow-xl">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                             <div>

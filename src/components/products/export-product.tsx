@@ -109,7 +109,7 @@ export default function ExportProduct({ products, storeName }: Readonly<ExportPr
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/5 transition-colors"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-(--pry-clr)/5 transition-colors cursor-pointer"
             >
                 <Download size={15} />
                 Export
