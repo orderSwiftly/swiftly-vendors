@@ -32,33 +32,34 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
         if (f) handleFile(f);
     };
 
-    const handleImport = async () => {
-        if (!file) return;
-        setLoading(true);
+const handleImport = async () => {
+    if (!file) return;
+    setLoading(true);
+    
+    try {
+        const result = await importProducts(storeId, file);
         
-        try {
-            const result = await importProducts(storeId, file);
-            
-            if (result.errors && result.errors.length > 0) {
-                toast.warning(`Imported ${result.inserted} products. ${result.errors.length} error(s): ${result.errors.join(", ")}`);
-            } else {
-                toast.success(`Successfully imported ${result.inserted} product${result.inserted !== 1 ? 's' : ''}`);
-            }
-            
-            setLoading(false);
-            setDone(true);
-            onImported?.();
-            
-            setTimeout(() => {
-                setOpen(false);
-                setFile(null);
-                setDone(false);
-            }, 1200);
-        } catch (error) {
-            setLoading(false);
-            toast.error(error instanceof Error ? error.message : "Failed to import products");
+        if (result.errors && result.errors.length > 0) {
+            // Show exact errors from backend
+            toast.warning(`Imported ${result.inserted} products. Errors: ${result.errors.join(" | ")}`);
+        } else {
+            toast.success(`Successfully imported ${result.inserted} product${result.inserted !== 1 ? 's' : ''}`);
         }
-    };
+        
+        setLoading(false);
+        setDone(true);
+        onImported?.();
+        
+        setTimeout(() => {
+            setOpen(false);
+            setFile(null);
+            setDone(false);
+        }, 1200);
+    } catch (error) {
+        setLoading(false);
+        toast.error(error instanceof Error ? error.message : "Failed to import products");
+    }
+};
 
     const close = () => {
         if (loading) return;
@@ -84,7 +85,7 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-semibold text-gray-900 sec-ff">Import Products</p>
-                                <p className="text-xs text-gray-500 sec-ff mt-0.5">Upload a CSV file to bulk-add products.</p>
+                                <p className="text-xs text-gray-500 sec-ff mt-0.5">Upload a CSV or Excel file to bulk-add products.</p>
                             </div>
                             <button onClick={close} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={18} />
@@ -99,16 +100,16 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                             onClick={() => inputRef.current?.click()}
                             className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 cursor-pointer transition-colors ${
                                 dragOver
-                                    ? "border-blue-500 bg-blue-50"
+                                    ? "border-(--pry-clr) bg-blue-50"
                                     : file
-                                    ? "border-green-400 bg-green-50"
-                                    : "border-gray-200 hover:border-blue-400 hover:bg-blue-50"
+                                    ? "border-(--prof-clr) bg-green-50"
+                                    : "border-gray-200 hover:border-(--pry-clr) hover:bg-(--pry-clr)/5"
                             }`}
                         >
                             <input
                                 ref={inputRef}
                                 type="file"
-                                accept=".csv"
+                                accept=".csv,.xlsx,.xls"
                                 className="hidden"
                                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
                             />
@@ -121,8 +122,8 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                             ) : (
                                 <>
                                     <Upload size={28} className="text-gray-300" />
-                                    <p className="text-sm text-gray-600 sec-ff">Drag & drop or <span className="text-blue-600 font-medium">browse</span></p>
-                                    <p className="text-xs text-gray-400 sec-ff">Supports .csv files only</p>
+                                    <p className="text-sm text-gray-600 sec-ff">Drag & drop or <span className="text-(--pry-clr) font-medium">browse</span></p>
+                                    <p className="text-xs text-gray-400 sec-ff">Supports .csv, .xlsx, .xls files</p>
                                 </>
                             )}
                         </div>
@@ -139,7 +140,7 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                             <button
                                 onClick={handleImport}
                                 disabled={!file || loading || done}
-                                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium sec-ff flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity hover:bg-blue-700"
+                                className="flex-1 py-2.5 rounded-xl bg-(--pry-clr) text-(--txt-clr) text-sm font-medium sec-ff flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity cursor-pointer"
                             >
                                 {done ? (
                                     <><CheckCircle2 size={15} /> Imported</>

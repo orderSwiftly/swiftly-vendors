@@ -156,20 +156,16 @@ export const getProductTemplateRaw = async (): Promise<string> => {
 };
 
 
-// bulk upload products from CSV file
-export interface ImportResult {
-  inserted: number;
-  errors: string[];
+// bulk upload products from CSV/XLSX file
+
+export interface ImportError {
+  row: number;
+  messages: string[];
 }
 
-// Import products from CSV file
-// src/lib/products.ts
-
-// src/lib/products.ts
-
 export interface ImportResult {
   inserted: number;
-  errors: string[];  // Backend returns array of strings, not objects
+  errors: ImportError[];  // Change this from string[] to ImportError[]
 }
 
 export const importProducts = async (
@@ -178,34 +174,8 @@ export const importProducts = async (
 ): Promise<ImportResult> => {
   try {
     const token = localStorage.getItem('token');
-    
-    // Read and fix the CSV content
-    const fileText = await file.text();
-    const lines = fileText.split('\n');
-    
-    // Fix the is_active values (convert TRUE/FALSE to true/false)
-    const fixedLines = lines.map((line, index) => {
-      if (index === 0) return line; // Skip header row
-      if (!line.trim()) return line;
-      
-      const values = line.split(',');
-      const headers = lines[0].toLowerCase().split(',');
-      const isActiveIndex = headers.findIndex(h => h.trim() === 'is_active');
-      
-      if (isActiveIndex !== -1 && values[isActiveIndex]) {
-        // Convert to lowercase true/false
-        const val = values[isActiveIndex].trim().toLowerCase();
-        values[isActiveIndex] = (val === 'true' || val === 'false') ? val : 'false';
-        return values.join(',');
-      }
-      return line;
-    });
-    
-    const fixedCsv = fixedLines.join('\n');
-    const fixedFile = new File([fixedCsv], file.name, { type: 'text/csv' });
-    
     const formData = new FormData();
-    formData.append('photo', fixedFile);
+    formData.append('photo', file);
     
     const response = await api.post(`/store/${storeId}/products/import`, formData, {
       headers: {
