@@ -179,7 +179,7 @@ const handleSubmit = async () => {
                     <span className="text-sm font-medium text-(--pry-clr) sec-ff">All stores</span>
                 </label>
 
-                {/* Option 2 — Multiple specific stores */}
+                {/* Option 2 — Multiple specific stores
                 <div className={`rounded-xl border overflow-hidden transition-colors ${
                     level === "MultipleStores" ? "border-(--bg-clr) bg-(--bg-clr)/5" : "border-gray-200"
                 }`}>
@@ -214,7 +214,7 @@ const handleSubmit = async () => {
                             })}
                         </div>
                     )}
-                </div>
+                </div> */}
 
                 {/* Option 3 — One store */}
                 <div className={`rounded-xl border overflow-hidden transition-colors ${
@@ -366,7 +366,7 @@ const handleSubmit = async () => {
             <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-(--bg-clr) text-white text-sm font-semibold sec-ff hover:bg-(--bg-clr)/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-(--bg-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--bg-clr)/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
             >
                 {loading ? (
                     <>

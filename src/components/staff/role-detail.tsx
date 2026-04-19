@@ -3,9 +3,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Users } from "lucide-react";
+import { Loader2, Users, Shield, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { getRoleDetails, editRole, type Role, type RoleDetails, type RolePermissions, ALL_PERMISSIONS } from "@/lib/role";
+import { isProtectedRole, getRoleProtectionStatus, isOrganizationManager, isStoreManager, isCashier } from "@/lib/protected-roles";
 import RevokeRoleModal from "./revoke-role-modal";
 
 const PERMISSION_LABELS: Record<string, { label: string; description: string }> = {
@@ -32,6 +33,14 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
     const [name, setName] = useState(role.name);
     const [selected, setSelected] = useState<Set<string>>(new Set(role.permissions));
     const [saving, setSaving] = useState(false);
+    const [originalPermissions, setOriginalPermissions] = useState<Set<string>>(new Set());
+
+    // Check if current role is protected
+    const isProtected = isProtectedRole(role.name);
+    const isOrgManager = isOrganizationManager(role.name);
+    const isStoreMgr = isStoreManager(role.name);
+    const isCashierRole = isCashier(role.name);
+    const protectionStatus = getRoleProtectionStatus(role.name);
 
     // Revoke modal state
     const [revokeModalOpen, setRevokeModalOpen] = useState(false);
@@ -43,13 +52,21 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
             .then((data) => {
                 setDetail(data);
                 setName(data.name);
-                setSelected(new Set(data.permissions));
+                const permsSet = new Set(data.permissions);
+                setSelected(permsSet);
+                setOriginalPermissions(permsSet);
             })
             .catch((err: Error) => toast.error(err.message))
             .finally(() => setLoading(false));
     }, [role.id]);
 
     const toggle = (perm: string) => {
+        // Prevent toggling if role is protected
+        if (isProtected) {
+            toast.error(protectionStatus.message);
+            return;
+        }
+        
         setSelected((prev) => {
             const next = new Set(prev);
             next.has(perm) ? next.delete(perm) : next.add(perm);
@@ -58,8 +75,21 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
     };
 
     const handleSave = async () => {
-        if (!name.trim()) { toast.error("Role name is required."); return; }
-        if (selected.size === 0) { toast.error("Select at least one permission."); return; }
+        // Prevent saving if role is protected
+        if (isProtected) {
+            toast.error(protectionStatus.message);
+            return;
+        }
+
+        if (!name.trim()) { 
+            toast.error("Role name is required."); 
+            return; 
+        }
+        
+        if (selected.size === 0) { 
+            toast.error("Select at least one permission."); 
+            return; 
+        }
 
         setSaving(true);
         try {
@@ -73,6 +103,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                 permissions: permissionsObj,
             });
             toast.success(`Role "${name.trim()}" updated.`);
+            setOriginalPermissions(new Set(selected));
             onSaved();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to update role.");
@@ -91,9 +122,25 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
             .then((data) => {
                 setDetail(data);
                 setName(data.name);
-                setSelected(new Set(data.permissions));
+                const permsSet = new Set(data.permissions);
+                setSelected(permsSet);
+                setOriginalPermissions(permsSet);
             })
             .catch((err: Error) => toast.error(err.message));
+    };
+
+    const getRoleIcon = () => {
+        if (isOrgManager) return <Crown size={18} className="text-purple-600" />;
+        if (isStoreMgr) return <Shield size={18} className="text-blue-600" />;
+        if (isCashierRole) return <Shield size={18} className="text-green-600" />;
+        return null;
+    };
+
+    const getRoleBadgeColor = () => {
+        if (isOrgManager) return "bg-purple-50 border-purple-200 text-purple-700";
+        if (isStoreMgr) return "bg-blue-50 border-blue-200 text-blue-700";
+        if (isCashierRole) return "bg-green-50 border-green-200 text-green-700";
+        return "bg-amber-50 border-amber-200 text-amber-700";
     };
 
     if (loading) {
@@ -104,8 +151,33 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
         );
     }
 
+    // Check if any changes were made
+    const hasChanges = !isProtected && (
+        name !== detail?.name || 
+        selected.size !== originalPermissions.size ||
+        !Array.from(selected).every(p => originalPermissions.has(p))
+    );
+
     return (
         <div className="flex flex-col gap-6 mb-20">
+            {/* Protected Role Warning Banner */}
+            {isProtected && (
+                <div className={`flex items-start gap-3 p-4 rounded-xl border ${getRoleBadgeColor()}`}>
+                    <div className="flex items-center gap-2">
+                        {getRoleIcon()}
+                        {/* <Shield size={18} /> */}
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-semibold sec-ff">
+                            System Role - Read Only
+                        </p>
+                        <p className="text-xs sec-ff mt-1">
+                            {protectionStatus.message} This role&apos;s name and permissions are fixed by the system and cannot be modified.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Revoke Modal */}
             {selectedStaff && (
                 <RevokeRoleModal
@@ -122,7 +194,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                 />
             )}
 
-            {/* Staff assigned */}
+            {/* Staff assigned section - remains functional for all roles */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-(--pry-clr)/60 sec-ff uppercase tracking-wide">
@@ -168,7 +240,7 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
 
             <div className="border-t border-gray-100" />
 
-            {/* Name */}
+            {/* Name - Disabled for protected roles */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-(--pry-clr)/60 sec-ff uppercase tracking-wide">
                     Role Name
@@ -176,12 +248,22 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                 <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-(--pry-clr) sec-ff outline-none focus:border-(--pry-clr) transition-colors bg-(--txt-clr)"
+                    onChange={(e) => !isProtected && setName(e.target.value)}
+                    disabled={isProtected}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm sec-ff outline-none transition-colors bg-(--txt-clr)
+                        ${isProtected 
+                            ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50' 
+                            : 'border-gray-200 text-(--pry-clr) focus:border-(--pry-clr)'
+                        }`}
                 />
+                {isProtected && (
+                    <p className="text-xs text-amber-600 sec-ff mt-1">
+                        System role names cannot be changed
+                    </p>
+                )}
             </div>
 
-            {/* Permissions */}
+            {/* Permissions - Disabled for protected roles */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-center bg-yellow-200 border border-yellow-500 sec-ff text-yellow-700 p-6 rounded-lg">
                     Changes apply immediately to all {detail?.staff.length ?? 0} staff with this role.
@@ -202,11 +284,13 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                             <button
                                 key={perm}
                                 onClick={() => toggle(perm)}
-                                className={`flex items-center justify-between gap-4 p-3.5 rounded-xl border text-left transition-colors ${
-                                    checked
+                                disabled={isProtected}
+                                className={`flex items-center justify-between gap-4 p-3.5 rounded-xl border text-left transition-colors
+                                    ${isProtected ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}
+                                    ${checked
                                         ? "border-(--pry-clr)/30 bg-(--pry-clr)/5"
                                         : "border-gray-100 bg-gray-50 hover:border-gray-200"
-                                }`}
+                                    }`}
                             >
                                 <div>
                                     <p className={`text-sm font-semibold sec-ff ${checked ? "text-(--pry-clr)" : "text-(--pry-clr)/70"}`}>
@@ -223,14 +307,20 @@ export default function RoleDetailView({ role, onSaved }: Readonly<RoleDetailPro
                 </div>
             </div>
 
-            {/* Save */}
-            <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full py-3 rounded-xl bg-(--prof-clr) text-(--txt-clr) text-sm font-semibold sec-ff hover:bg-(--prof-clr)/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
-            >
-                {saving ? <><Loader2 size={15} className="animate-spin" /> Saving…</> : "Save Changes"}
-            </button>
+            {/* Save Button - Only shown for non-protected roles */}
+            {!isProtected && (
+                <button
+                    onClick={handleSave}
+                    disabled={saving || !hasChanges}
+                    className={`w-full py-3 rounded-xl text-sm font-semibold sec-ff flex items-center justify-center gap-2 transition-colors
+                        ${hasChanges && !saving
+                            ? 'bg-(--prof-clr) text-(--txt-clr) hover:bg-(--prof-clr)/90 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                >
+                    {saving ? <><Loader2 size={15} className="animate-spin" /> Saving…</> : "Save Changes"}
+                </button>
+            )}
         </div>
     );
 }

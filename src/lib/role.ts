@@ -146,6 +146,13 @@ export const editRole = async (
     try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
+        
+        // Client-side protection for system roles
+        const protectedRoles = ['Cashier', 'Store Manager', 'Organization Manager'];
+        if (protectedRoles.includes(body.name)) {
+            throw new Error(`${body.name} is a system role and cannot be modified`);
+        }
+        
         const response = await api.patch(`/roles/${roleId}`, body, {
             headers: { Authorization: `Bearer ${token}` },
         });
