@@ -43,7 +43,7 @@ export default function SidebarNav() {
         <header className="flex items-center justify-between bg-(--txt-clr) px-4 md:px-12 pt-4">
 
             {/* LEFT — Institution logo */}
-            <div className="flex items-center gap-2 cursor-pointer" title="Change campus">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
                 <div className="w-8 h-8 rounded-full overflow-hidden">
                     <Image
                         src="/brand-logo.png"

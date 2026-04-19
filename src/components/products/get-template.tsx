@@ -30,7 +30,7 @@ export default function GetTemplateComponent() {
       onClick={handleDownloadTemplate}
       className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-(--pry-clr) hover:bg-(--pry-clr)/5 transition-colors border border-gray-200 sec-ff cursor-pointer"
     >
-      <Download size={15} />
+      <Download size={20} />
       Download Template
     </button>
   );

@@ -4,6 +4,8 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, FileSpreadsheet, Loader2, CheckCircle2 } from "lucide-react";
+import { importProducts } from "@/lib/products";
+import { toast } from "sonner";
 
 interface ImportProductProps {
     storeId: string;
@@ -33,17 +35,29 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
     const handleImport = async () => {
         if (!file) return;
         setLoading(true);
-        // TODO: wire up your real import API call here
-        // e.g. await importProductsFromCSV(storeId, file);
-        await new Promise((r) => setTimeout(r, 1500)); // simulated delay
-        setLoading(false);
-        setDone(true);
-        onImported?.();
-        setTimeout(() => {
-            setOpen(false);
-            setFile(null);
-            setDone(false);
-        }, 1200);
+        
+        try {
+            const result = await importProducts(storeId, file);
+            
+            if (result.errors && result.errors.length > 0) {
+                toast.warning(`Imported ${result.inserted} products. ${result.errors.length} error(s): ${result.errors.join(", ")}`);
+            } else {
+                toast.success(`Successfully imported ${result.inserted} product${result.inserted !== 1 ? 's' : ''}`);
+            }
+            
+            setLoading(false);
+            setDone(true);
+            onImported?.();
+            
+            setTimeout(() => {
+                setOpen(false);
+                setFile(null);
+                setDone(false);
+            }, 1200);
+        } catch (error) {
+            setLoading(false);
+            toast.error(error instanceof Error ? error.message : "Failed to import products");
+        }
     };
 
     const close = () => {
@@ -65,14 +79,14 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
-                    <div className="bg-(--txt-clr) rounded-2xl border border-gray-200 w-full max-w-md p-6 flex flex-col gap-5 shadow-xl">
+                    <div className="bg-white rounded-2xl border border-gray-200 w-full max-w-md p-6 flex flex-col gap-5 shadow-xl">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-semibold text-(--pry-clr) sec-ff">Import Products</p>
-                                <p className="text-xs text-(--pry-clr)/50 sec-ff mt-0.5">Upload a CSV or Excel file to bulk-add products.</p>
+                                <p className="text-sm font-semibold text-gray-900 sec-ff">Import Products</p>
+                                <p className="text-xs text-gray-500 sec-ff mt-0.5">Upload a CSV file to bulk-add products.</p>
                             </div>
-                            <button onClick={close} className="text-(--pry-clr)/40 hover:text-(--pry-clr) transition-colors">
+                            <button onClick={close} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={18} />
                             </button>
                         </div>
@@ -85,30 +99,30 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                             onClick={() => inputRef.current?.click()}
                             className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 cursor-pointer transition-colors ${
                                 dragOver
-                                    ? "border-(--pry-clr) bg-(--pry-clr)/5"
+                                    ? "border-blue-500 bg-blue-50"
                                     : file
                                     ? "border-green-400 bg-green-50"
-                                    : "border-gray-200 hover:border-(--pry-clr)/40 hover:bg-(--pry-clr)/5"
+                                    : "border-gray-200 hover:border-blue-400 hover:bg-blue-50"
                             }`}
                         >
                             <input
                                 ref={inputRef}
                                 type="file"
-                                accept=".csv,.xlsx,.xls"
+                                accept=".csv"
                                 className="hidden"
                                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
                             />
                             {file ? (
                                 <>
                                     <FileSpreadsheet size={28} className="text-green-500" />
-                                    <p className="text-sm font-medium text-(--pry-clr) sec-ff">{file.name}</p>
-                                    <p className="text-xs text-(--pry-clr)/40 sec-ff">{(file.size / 1024).toFixed(1)} KB</p>
+                                    <p className="text-sm font-medium text-gray-900 sec-ff">{file.name}</p>
+                                    <p className="text-xs text-gray-400 sec-ff">{(file.size / 1024).toFixed(1)} KB</p>
                                 </>
                             ) : (
                                 <>
-                                    <Upload size={28} className="text-(--pry-clr)/30" />
-                                    <p className="text-sm text-(--pry-clr)/60 sec-ff">Drag & drop or <span className="text-(--pry-clr) font-medium">browse</span></p>
-                                    <p className="text-xs text-(--pry-clr)/40 sec-ff">Supports .csv, .xlsx, .xls</p>
+                                    <Upload size={28} className="text-gray-300" />
+                                    <p className="text-sm text-gray-600 sec-ff">Drag & drop or <span className="text-blue-600 font-medium">browse</span></p>
+                                    <p className="text-xs text-gray-400 sec-ff">Supports .csv files only</p>
                                 </>
                             )}
                         </div>
@@ -118,14 +132,14 @@ export default function ImportProduct({ storeId, onImported }: Readonly<ImportPr
                             <button
                                 onClick={close}
                                 disabled={loading}
-                                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-(--pry-clr) sec-ff hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 sec-ff hover:bg-gray-50 disabled:opacity-40 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleImport}
                                 disabled={!file || loading || done}
-                                className="flex-1 py-2.5 rounded-xl bg-(--pry-clr) text-white text-sm font-medium sec-ff flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity"
+                                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium sec-ff flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity hover:bg-blue-700"
                             >
                                 {done ? (
                                     <><CheckCircle2 size={15} /> Imported</>
