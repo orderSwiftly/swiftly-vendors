@@ -8,11 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Spinner from "./ui/spinner";
 import { toast } from "sonner";
 
-interface LoginFormProps {
-    onSwitchToSignup: () => void;
-}
-
-export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>) {
+export default function LoginForm() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -100,13 +96,6 @@ export default function LoginForm({ onSwitchToSignup }: Readonly<LoginFormProps>
             >
                 {loading ? <Spinner /> : "Login"}
             </button>
-
-            <p className="text-center text-sm mt-1" style={{ fontFamily: "var(--sec-ff)", color: "var(--sec-clr)" }}>
-                Don&apos;t have an account?{" "}
-                <button type="button" onClick={onSwitchToSignup} className="font-semibold cursor-pointer" style={{ color: "var(--bg-clr)" }}>
-                    Sign up here
-                </button>
-            </p>
         </form>
     );
 }
