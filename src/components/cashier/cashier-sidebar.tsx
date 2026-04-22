@@ -17,7 +17,7 @@ import { useProfileStore } from '@/store/userStore';
 import { logoutOwner } from '@/lib/auth';
 
 const navItems = [
-    { label: 'Process Sale', href: '/cashier/dashboard/process-sale', icon: ShoppingBasket, exact: true },
+    { label: 'Process Sale', href: '/cashier/dashboard', icon: ShoppingBasket, exact: true },
 ];
 
 export default function CashierSidebar() {
