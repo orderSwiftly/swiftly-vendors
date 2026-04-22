@@ -8,6 +8,7 @@ export interface Profile {
     email: string;
     name: string;
     is_owner: boolean;
+    role: string;
     permissions: string[];
 }
 

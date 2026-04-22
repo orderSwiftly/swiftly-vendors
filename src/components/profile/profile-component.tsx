@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Mail, User, Shield, BadgeCheck, Building2, CalendarDays } from "lucide-react";
+import { Loader2, Mail, User, Shield, KeyRound, BadgeCheck, Building2, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { getProfile, type Profile } from "@/lib/profile";
 import Link from "next/link";
@@ -106,6 +106,11 @@ export default function ProfileComponent() {
                                     icon={<Shield size={16} className="text-(--pry-clr)/40" />}
                                     label="Account Type"
                                     value={profile.is_owner ? "Owner" : "Staff"}
+                                />
+                                <ProfileRow
+                                    icon={<KeyRound size={16} className="text-(--pry-clr)/40" />}
+                                    label="Role"
+                                    value={profile.role ? profile.role : "None"}
                                 />
                                 <ProfileRow
                                     icon={<BadgeCheck size={16} className="text-(--pry-clr)/40" />}

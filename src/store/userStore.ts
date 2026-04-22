@@ -6,6 +6,8 @@ interface Profile {
     _id?: string;
     name?: string;
     email?: string;
+    role: string;
+    is_owner?: boolean;
     photo?: string;
 }
 
@@ -26,7 +28,7 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
         if (get().profile) return;
 
         const token = localStorage.getItem('token');
-        if (!token) return; // ← silently bail, no error thrown
+        if (!token) return;
 
         set({ isLoading: true, error: null });
         try {

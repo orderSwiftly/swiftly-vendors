@@ -22,7 +22,7 @@ export default function LoginForm() {
             const data = await loginOwner(email, password);
             localStorage.setItem("token", data.token);
             toast.success("Login successful! Redirecting...");
-            router.push("/dashboard");
+            router.push("/role-gate");
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Login failed.";
             toast.error(errorMessage);
