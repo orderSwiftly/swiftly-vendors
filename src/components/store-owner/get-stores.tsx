@@ -1,7 +1,7 @@
 // src/components/store-owner/get-stores.tsx
 
 "use client";
-import { getStores, deactivateStore, reactivateStore, deactivateLocation, activateLocation, type Store, type StoreLocation } from "@/lib/store";
+import { getStores, deactivateStore, reactivateStore, deactivateLocation, activateLocation, openStore, closeStore, type Store, type StoreLocation } from "@/lib/store";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import Spinner from "../ui/spinner";
@@ -95,6 +95,26 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
         }
     };
 
+    const handleToggleStoreStatus = async (storeId: string, currentStatus: boolean) => {
+        try {
+            if (currentStatus) {
+                await closeStore(storeId);
+                setStores((prev) =>
+                    prev.map((s) => (s.id === storeId ? { ...s, is_open: false } : s))
+                );
+                // console.log(`Store ${storeId} closed successfully`);
+            } else {
+                await openStore(storeId);
+                setStores((prev) =>
+                    prev.map((s) => (s.id === storeId ? { ...s, is_open: true } : s))
+                );
+                // console.log(`Store ${storeId} opened successfully`);
+            }
+        } catch (err: unknown) {
+            console.error(err instanceof Error ? err.message : `Failed to ${currentStatus ? "close" : "open"} store.`);
+        }
+    };
+
     const handleDeactivateLocation = async (storeId: string, locationId: string) => {
         try {
             await deactivateLocation(locationId);
@@ -157,6 +177,7 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                         onEditName={() => setEditingStore(store)}
                         onDeactivate={() => handleDeactivateStore(store.id)}
                         onReactivate={() => handleReactivateStore(store.id)}
+                        onToggleStatus={() => handleToggleStoreStatus(store.id, store.is_open ?? false)}
                         onLocationEditSuccess={(locationId, updatedFields) =>
                             handleLocationEditSuccess(store.id, locationId, updatedFields)
                         }
@@ -178,6 +199,7 @@ function StoreBlock({
     onEditName,
     onDeactivate,
     onReactivate,
+    onToggleStatus,
     onLocationEditSuccess,
     onAddLocationSuccess,
     onDeactivateLocation,
@@ -188,6 +210,7 @@ function StoreBlock({
     onEditName: () => void;
     onDeactivate: () => Promise<void>;
     onReactivate: () => Promise<void>;
+    onToggleStatus: () => Promise<void>;
     onLocationEditSuccess: (locationId: string, updatedFields: { name?: string; address?: string }) => void;
     onAddLocationSuccess: (newLocations: StoreLocation[]) => void;
     onDeactivateLocation: (locationId: string) => Promise<void>;
@@ -197,9 +220,11 @@ function StoreBlock({
     const [addingLocation, setAddingLocation] = useState(false);
     const [deactivating, setDeactivating] = useState(false);
     const [reactivating, setReactivating] = useState(false);
+    const [togglingStatus, setTogglingStatus] = useState(false);
     const [locationWarning, setLocationWarning] = useState<string | null>(null);
 
     const activeLocations = store.locations.filter((l) => l.is_active !== false);
+    const isStoreOpen = store.is_open ?? false;
 
     const handleDeactivate = async () => {
         setDeactivating(true);
@@ -216,6 +241,15 @@ function StoreBlock({
             await onReactivate();
         } finally {
             setReactivating(false);
+        }
+    };
+
+    const handleToggleStatus = async () => {
+        setTogglingStatus(true);
+        try {
+            await onToggleStatus();
+        } finally {
+            setTogglingStatus(false);
         }
     };
 
@@ -259,6 +293,11 @@ function StoreBlock({
                     <div>
                         <h2 className="text-base font-semibold text-gray-800">{store.name}</h2>
                         <p className="text-xs text-gray-400 mt-0.5">Owner: {ownerName ?? "—"}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isStoreOpen ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                                {isStoreOpen ? "Open" : "Closed"}
+                            </span>
+                        </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                         <button
@@ -267,6 +306,23 @@ function StoreBlock({
                         >
                             Edit Store
                         </button>
+                        {isStoreOpen ? (
+                            <button
+                                onClick={handleToggleStatus}
+                                disabled={togglingStatus}
+                                className="text-sm border border-red-200 rounded-md px-3 py-1.5 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                            >
+                                {togglingStatus ? "Closing..." : "Close Store"}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleToggleStatus}
+                                disabled={togglingStatus}
+                                className="text-sm border border-green-200 rounded-md px-3 py-1.5 text-green-600 hover:bg-green-50 transition-colors disabled:opacity-50"
+                            >
+                                {togglingStatus ? "Opening..." : "Open Store"}
+                            </button>
+                        )}
                         {store.is_active ? (
                             <button
                                 onClick={handleDeactivate}

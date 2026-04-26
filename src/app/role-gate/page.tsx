@@ -26,7 +26,7 @@ export default function RoleGatePage() {
     }, [profile, isLoading, router]);
 
     return (
-        <main className="flex items-center justify-center min-h-screen bg-white">
+        <main className="flex items-center justify-center min-h-screen bg-(--txt-clr)">
             <div className="flex flex-col items-center gap-3">
                 <Loader2 size={28} className="animate-spin text-(--pry-clr)" />
                 <p className="text-sm text-(--pry-clr)/50 sec-ff">Setting up your workspace...</p>

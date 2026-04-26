@@ -16,6 +16,7 @@ export interface Store {
     store_name?: string;
     image_url: string | null;
     is_active: boolean;
+    is_open?: boolean;
     locations: StoreLocation[];
 }
 
@@ -187,10 +188,6 @@ export const addLocation = async (storeId: string, locations: AddLocationBody[])
     }
 };
 
-// src/lib/store.ts
-
-// src/lib/store.ts
-
 export const uploadStoreImage = async (storeId: string, photo: File) => {
     try {
         const token = localStorage.getItem("token");
@@ -219,3 +216,33 @@ export const uploadStoreImage = async (storeId: string, photo: File) => {
         throw new Error("An unexpected error occurred.");
     }
 };
+
+export const openStore = async (storeId: string) => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found.");
+
+        const response = await api.patch(`/stores/${storeId}/open`, null, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to open store", error);
+        throw error;
+    }
+}
+
+export const closeStore = async (storeId: string) => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found.");
+
+        const response = await api.patch(`/stores/${storeId}/close`, null, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to close store", error);
+        throw error;
+    }
+}
