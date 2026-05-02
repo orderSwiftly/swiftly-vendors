@@ -15,7 +15,7 @@ const TABS = ["Orders", "Active Orders", "Delivered"] as const;
 type Tab = typeof TABS[number];
 
 const PENDING_STATUSES   = new Set(["pending"]);
-const ACTIVE_STATUSES    = new Set(["confirmed", "shipped", "collected", "awaiting_verification", "verified"]);
+const ACTIVE_STATUSES    = new Set(["confirmed", "prepared", "collected", "awaiting_verification", "verified"]);
 const DELIVERED_STATUSES = new Set(["delivered"]);
 
 function filterByTab(orders: Order[], tab: Tab): Order[] {
@@ -36,7 +36,7 @@ const EMPTY_MESSAGES: Record<Tab, string> = {
 export const ORDER_STATUS_STYLES: Record<string, { bar: string; dot: string; badge: string }> = {
     pending:               { bar: "border-amber-200 text-amber-700",     dot: "bg-amber-400",   badge: "border-amber-200 text-amber-700 bg-amber-50" },
     confirmed:             { bar: "border-green-200 text-green-700",     dot: "bg-green-400",   badge: "border-green-200 text-green-700 bg-green-50" },
-    shipped:               { bar: "border-blue-200 text-blue-700",       dot: "bg-blue-400",    badge: "border-blue-200 text-blue-700 bg-blue-50" },
+    prepared:               { bar: "border-blue-200 text-blue-700",       dot: "bg-blue-400",    badge: "border-blue-200 text-blue-700 bg-blue-50" },
     awaiting_verification: { bar: "border-amber-200 text-amber-700",     dot: "bg-amber-400",   badge: "border-amber-200 text-amber-700 bg-amber-50" },
     verified:              { bar: "border-teal-200 text-teal-700",       dot: "bg-teal-400",    badge: "border-teal-200 text-teal-700 bg-teal-50" },
     delivered:             { bar: "border-emerald-200 text-emerald-700", dot: "bg-emerald-400", badge: "border-emerald-200 text-emerald-700 bg-emerald-50" },
@@ -46,7 +46,7 @@ export const ORDER_STATUS_STYLES: Record<string, { bar: string; dot: string; bad
 export const ORDER_STATUS_LABELS: Record<string, string> = {
     pending:               "Awaiting payment from customer",
     confirmed:             "Payment received — order confirmed",
-    shipped:               "Order prepared and dispatched to rider",
+    prepared:               "Order has been prepared, ready for pickup",
     awaiting_verification: "Rider nearby — awaiting customer verification",
     verified:              "Customer verified the rider",
     collected:             "Rider has collected the order",
@@ -58,7 +58,7 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
 const STATUS_BADGE_LABELS: Record<string, string> = {
     pending:               "Pending",
     confirmed:             "Confirmed",
-    shipped:               "Shipped",
+    prepared:               "Prepared",
     awaiting_verification: "Awaiting Verification",
     verified:              "Verified",
     collected:             "Collected",
@@ -69,7 +69,7 @@ function StatusBadge({ status }: { status: string }) {
     const config = ORDER_STATUS_STYLES[status] ?? { badge: "border-gray-200 text-gray-500 bg-gray-50" };
     const label  = STATUS_BADGE_LABELS[status] ?? status.replace(/_/g, " ");
     return (
-        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${config.badge}`}>
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${config.badge}`}>
             {label}
         </span>
     );
@@ -109,7 +109,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
             {/* ── top strip: status dot + label + time ── */}
             <div className={`flex items-center justify-between px-4 py-2 border-b ${statusConfig.bar}`}>
                 <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig.dot}`} />
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${statusConfig.dot}`} />
                     <span className="text-xs font-medium">{statusLabel}</span>
                 </div>
                 <span className="text-[11px] text-gray-400">{formatTime(order.createdAt)}</span>
@@ -119,7 +119,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
             <div className="flex items-stretch">
 
                 {/* product images — stacked thumbnails */}
-                <div className="w-20 flex-shrink-0 flex flex-col">
+                <div className="w-20 shrink-0 flex flex-col">
                     {order.items.slice(0, 2).map((item, i) => (
                         item.productImg?.[0] ? (
                             <img
@@ -155,7 +155,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
                                 </p>
                             ))}
                         </div>
-                        <span className="flex-shrink-0 text-[11px] font-semibold border border-gray-200 text-gray-500 rounded-full px-2 py-0.5 whitespace-nowrap">
+                        <span className="shrink-0 text-[11px] font-semibold border border-gray-200 text-gray-500 rounded-full px-2 py-0.5 whitespace-nowrap">
                             {totalQty} item{totalQty !== 1 ? "s" : ""}
                         </span>
                     </div>
@@ -163,7 +163,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
                     {/* row 2: delivery address */}
                     {order.shippingAddress && (
                         <div className="flex items-center gap-1.5">
-                            <MapPin size={11} className="text-gray-300 flex-shrink-0" />
+                            <MapPin size={11} className="text-gray-300 shrink-0" />
                             <p className="text-xs text-gray-400 truncate">
                                 {order.shippingAddress.building}
                                 {order.shippingAddress.room ? `, Room ${order.shippingAddress.room}` : ""}
@@ -176,7 +176,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
                         <p className="text-sm font-bold text-gray-800">
                             {formatCurrency(order.pricing.total)}
                         </p>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${
                             order.paymentStatus === "paid"
                                 ? "border-green-200 text-green-700"
                                 : "border-red-200 text-red-500"
@@ -188,30 +188,32 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
             </div>
 
             {/* ── footer: order id + date + status badge + action ── */}
-<div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 gap-3">
-    <div className="flex items-center gap-1.5 min-w-0">
-        <Hash size={11} className="text-gray-300 flex-shrink-0" />
-        <span className="text-[11px] font-mono text-gray-400">{shortId}</span>
-        <span className="text-gray-200 text-xs mx-1">·</span>
-        <span className="text-[11px] text-gray-400 flex-shrink-0">{formatDate(order.createdAt)}</span>
-    </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-2.5 border-t border-gray-100">
+                {/* Left side - Order ID and Date */}
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <Hash size={11} className="text-gray-300 shrink-0" />
+                    <span className="text-[11px] font-mono text-gray-400 shrink-0">{shortId}</span>
+                    <span className="text-gray-200 text-xs mx-1 hidden sm:inline">·</span>
+                    <span className="text-[11px] text-gray-400 shrink-0">{formatDate(order.createdAt)}</span>
+                </div>
 
-    <div className="flex items-center gap-2 flex-shrink-0">
-        <StatusBadge status={order.orderStatus} />
-        
-        {/* Add View Details link */}
-        <Link
-            href={`/dashboard/profile/orders/${order._id}`}
-            className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
-        >
-            View Details
-        </Link>
-        
-        {order.orderStatus === "confirmed" && (
-            <ShipBtn orderId={order._id} onShipped={onRefresh} />
-        )}
-    </div>
-</div>
+                {/* Right side - Status Badges and Actions */}
+                <div className="flex items-center justify-end gap-2 flex-wrap">
+                    <StatusBadge status={order.orderStatus} />
+                    
+                    {/* View Details link */}
+                    <Link
+                        href={`/dashboard/profile/orders/${order._id}`}
+                        className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors whitespace-nowrap"
+                    >
+                        View Details
+                    </Link>
+                    
+                    {order.orderStatus === "confirmed" && (
+                        <ShipBtn orderId={order._id} onShipped={onRefresh} />
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
@@ -244,16 +246,16 @@ export default function OrderTab({ orders, loading, error, onRefresh }: Readonly
 
     return (
         <div className="w-full pry-ff">
-            {/* tab bar */}
-            <div className="border-b border-gray-200 mb-5">
-                <div className="flex items-center">
+            {/* tab bar - made responsive */}
+            <div className="border-b border-gray-200 mb-5 overflow-x-auto">
+                <div className="flex items-center min-w-max sm:min-w-0">
                     {TABS.map(tab => {
                         const count = filterByTab(orders, tab).length;
                         return (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-3 text-sm font-medium transition-all duration-150 border-b-2 -mb-px whitespace-nowrap flex items-center justify-center gap-1.5 ${
+                                className={`flex-1 py-3 px-3 sm:px-4 text-sm font-medium transition-all duration-150 border-b-2 -mb-px whitespace-nowrap flex items-center justify-center gap-1.5 ${
                                     activeTab === tab
                                         ? "border-(--acc-clr) text-(--prof-clr)"
                                         : "border-transparent text-gray-400 hover:text-(--pry-clr)"
@@ -281,7 +283,15 @@ export default function OrderTab({ orders, loading, error, onRefresh }: Readonly
                     <Spinner />
                 </div>
             ) : error ? (
-                <p className="text-red-500 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                    <p className="text-red-600 text-sm">{error}</p>
+                    <button 
+                        onClick={onRefresh}
+                        className="mt-2 text-xs text-red-600 hover:text-red-700 underline"
+                    >
+                        Try again
+                    </button>
+                </div>
             ) : tabOrders.length === 0 ? (
                 <EmptyState message={EMPTY_MESSAGES[activeTab]} />
             ) : (

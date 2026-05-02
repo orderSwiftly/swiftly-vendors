@@ -4,7 +4,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Package, MapPin, Hash, CreditCard, Truck, Store } from "lucide-react";
+import { ChevronLeft, Package, MapPin, PackageCheckIcon, CreditCard, Store } from "lucide-react";
 import { getOrderById, Order } from "@/lib/order";
 import Spinner from "@/components/ui/spinner";
 
@@ -198,11 +198,11 @@ export default function OrderDetailsClient({ orderId }: Readonly<OrderDetailsCli
                     )}
 
                     {/* tracking info if available */}
-                    {order.orderStatus === "shipped" && (
+                    {order.orderStatus === "prepared" && (
                         <div className="border-t border-gray-100 mt-4 pt-4">
                             <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Truck size={16} className="text-blue-500" />
-                                <span>Your order is on the way!</span>
+                                <PackageCheckIcon size={16} className="text-blue-500" />
+                                <span>Your order has been prepared</span>
                             </div>
                         </div>
                     )}

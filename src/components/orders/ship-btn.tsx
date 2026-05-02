@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { Truck } from "lucide-react";
+import { PackageCheckIcon } from "lucide-react";
 import { shipOrder } from "@/lib/order";
 import { toast } from "sonner";
 
@@ -20,9 +20,9 @@ export default function ShipBtn({ orderId, onShipped }: Readonly<ShipBtnProps>) 
         try {
             await shipOrder(orderId);
             onShipped();
-            toast.success("Order marked as shipped.");
+            toast.success("Order has been prepared.");
         } catch {
-            toast.error("Failed to mark order as shipped. Please try again.");
+            toast.error("Failed to prepare order. Please try again.");
         } finally {
             setShipping(false);
         }
@@ -34,8 +34,8 @@ export default function ShipBtn({ orderId, onShipped }: Readonly<ShipBtnProps>) 
             disabled={shipping}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-            <Truck size={13} className={shipping ? "animate-pulse" : ""} />
-            {shipping ? "Shipping..." : "Mark as Shipped"}
+            <PackageCheckIcon size={13} className={shipping ? "animate-pulse" : ""} />
+            {shipping ? "Preparing" : "Order Prepared"}
         </button>
     );
 }

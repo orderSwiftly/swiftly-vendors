@@ -34,7 +34,7 @@ export interface Order {
     items: OrderItem[];
     pricing: OrderPricing;
     shippingAddress: ShippingAddress;
-    orderStatus: "pending" | "confirmed" | "shipped" | "awaiting_verification" | "verified" | "delivered" | "collected";
+    orderStatus: "pending" | "confirmed" | "prepared" | "awaiting_verification" | "verified" | "delivered" | "collected";
     paymentStatus: "paid" | "unpaid";
     createdAt: string;
     paystackReference: string;
