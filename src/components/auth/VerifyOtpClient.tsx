@@ -1,3 +1,5 @@
+// src/components/auth/VerifyOtpClient.tsx
+
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { verifyOtp } from "@/lib/auth";
@@ -8,7 +10,7 @@ export default function VerifyOtpClient() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [timer, setTimer] = useState(30);
+  const [timer, setTimer] = useState(600); // Changed from 30 to 600 seconds (10 minutes)
   const [canResend, setCanResend] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
@@ -43,7 +45,7 @@ export default function VerifyOtpClient() {
 
   const handleResend = async () => {
     if (!canResend) return;
-    setTimer(30);
+    setTimer(600); // Reset to 10 minutes (600 seconds)
     setCanResend(false);
     setError(null);
     try {
@@ -63,16 +65,31 @@ export default function VerifyOtpClient() {
     setLoading(true);
     setError(null);
     try {
-      await verifyOtp(email, fullCode);
-      router.push("/auth/reset-psw");
+      const response = await verifyOtp(email, fullCode);
+      // Extract the token from the response
+      // Adjust this based on your actual response structure
+      const token = response?.token || response?.data?.token;
+      
+      if (token) {
+        // Pass the token to the reset password page
+        router.push(`/auth/reset-psw?token=${token}`);
+      } else {
+        // If no token in response, show error
+        setError("Verification successful but no reset token received.");
+        setLoading(false);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Invalid code.");
-    } finally {
       setLoading(false);
     }
   };
 
-  const formatTime = (s: number) => `0:${s.toString().padStart(2, "0")}`;
+  // Updated formatTime to handle minutes properly
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
     <>
@@ -82,7 +99,7 @@ export default function VerifyOtpClient() {
           Enter Verification Code
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Enter the 4-digit code that we have sent via the email{" "}
+          Enter the 6-digit code that we have sent via the email{" "}
           <span className="font-semibold text-gray-800">{email}</span>
         </p>
       </div>
@@ -91,7 +108,6 @@ export default function VerifyOtpClient() {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Image src="/brand-logo.png" alt="Swiftly" width={32} height={32} />
-          <span className="text-base font-semibold text-gray-700">swiftly</span>
         </div>
         <p className="text-sm font-medium text-gray-600 -mt-4">Swiftly IMS</p>
 

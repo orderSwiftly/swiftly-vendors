@@ -1,3 +1,5 @@
+// src/components/auth/ResetPasswordClient.tsx
+
 "use client";
 import { useState } from "react";
 import { resetPassword } from "@/lib/auth";

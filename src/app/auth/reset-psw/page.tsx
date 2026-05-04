@@ -1,4 +1,5 @@
-// Server component wrapper — client interactive logic lives in ResetPasswordClient
+// src/app/auth/reset-psw/page.tsx
+
 import React, { Suspense } from "react";
 import ResetPasswordClient from "@/components/auth/ResetPasswordClient";
 import type { Metadata } from "next";

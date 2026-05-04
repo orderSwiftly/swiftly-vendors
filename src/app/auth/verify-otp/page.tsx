@@ -1,3 +1,5 @@
+// src/app/auth/verify-otp/page.tsx
+
 import React, { Suspense } from "react";
 import VerifyOtpClient from "@/components/auth/VerifyOtpClient";
 import type { Metadata } from "next";
