@@ -35,7 +35,7 @@ export default function ShipBtn({ orderId, onShipped }: Readonly<ShipBtnProps>) 
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
             <PackageCheckIcon size={13} className={shipping ? "animate-pulse" : ""} />
-            {shipping ? "Preparing" : "Order Prepared"}
+            {shipping ? "Preparing" : "Prepare Order"}
         </button>
     );
 }

@@ -153,10 +153,10 @@ export default function OrderDetailsClient({ orderId }: Readonly<OrderDetailsCli
                     <div className="border-t border-gray-100 mt-4 pt-4">
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Subtotal</span>
+                                <span className="text-gray-500">Amount</span>
                                 <span className="text-gray-800">{formatCurrency(order.pricing.subtotal)}</span>
                             </div>
-                            <div className="flex justify-between text-sm">
+                            {/* <div className="flex justify-between text-sm">
                                 <span className="text-gray-500">Service Fee</span>
                                 <span className="text-gray-800">{formatCurrency(order.pricing.serviceFee)}</span>
                             </div>
@@ -167,7 +167,7 @@ export default function OrderDetailsClient({ orderId }: Readonly<OrderDetailsCli
                             <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-100">
                                 <span>Total</span>
                                 <span>{formatCurrency(order.pricing.total)}</span>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 

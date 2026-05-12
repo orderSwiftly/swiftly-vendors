@@ -174,7 +174,7 @@ function OrderCard({ order, onRefresh }: Readonly<{ order: Order; onRefresh: () 
                     {/* row 3: price + payment */}
                     <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-bold text-gray-800">
-                            {formatCurrency(order.pricing.total)}
+                            {formatCurrency(order.pricing.subtotal)}
                         </p>
                         <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${
                             order.paymentStatus === "paid"
