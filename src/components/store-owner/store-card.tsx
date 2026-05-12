@@ -2,9 +2,9 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { Store, Plus } from "lucide-react";
+import { Store } from "lucide-react";
 import { getStores } from "@/lib/store";
-import CreateStoreBtn from "../create-store-btn";
+// import CreateStoreBtn from "../create-store-btn";
 import Spinner from "../ui/spinner";
 import Link from "next/link";
 
@@ -56,9 +56,9 @@ export default function StoreCard() {
                         Select a store to manage or create a new one
                     </p>
                 </div>
-                {stores.length > 0 && (
+                {/* {stores.length > 0 && (
                     <CreateStoreBtn label="Create Store" onStoreCreated={refresh} />
-                )}
+                )} */}
             </div>
 
             {/* States */}
@@ -69,15 +69,15 @@ export default function StoreCard() {
             ) : error ? (
                 <p className="text-red-500 text-sm">{error}</p>
             ) : stores.length === 0 ? (
-                <EmptyState onStoreCreated={refresh} />
+                <EmptyState /* onStoreCreated={refresh} */ />
             ) : (
-                <StoreGrid stores={stores} onStoreCreated={refresh} />
+                <StoreGrid stores={stores} /* onStoreCreated={refresh} */ />
             )}
         </div>
     );
 }
 
-function EmptyState({ onStoreCreated }: { onStoreCreated: () => void }) {
+function EmptyState(/* { onStoreCreated }: { onStoreCreated: () => void } */) {
     return (
         <div className="flex items-center justify-center py-10">
             <div className="rounded-xl border border-gray-200 bg-white p-10 flex flex-col items-center gap-4 w-full max-w-sm text-center">
@@ -91,7 +91,7 @@ function EmptyState({ onStoreCreated }: { onStoreCreated: () => void }) {
                         locations — like different hostel branches or kiosks.
                     </p>
                 </div>
-                <CreateStoreBtn label="Create Your First Store" onStoreCreated={onStoreCreated} />
+                {/* <CreateStoreBtn label="Create Your First Store" onStoreCreated={onStoreCreated} /> */}
                 <p className="text-xs text-gray-400">
                     You can add more stores anytime from this screen.
                 </p>
@@ -102,12 +102,12 @@ function EmptyState({ onStoreCreated }: { onStoreCreated: () => void }) {
 
 function StoreGrid({
     stores,
-    onStoreCreated,
+    // onStoreCreated,
 }: {
     stores: StoreData[];
-    onStoreCreated: () => void;
+    // onStoreCreated: () => void;
 }) {
-    const [showModal, setShowModal] = useState(false);
+    // const [showModal, setShowModal] = useState(false);
 
     return (
         <>
@@ -117,23 +117,23 @@ function StoreGrid({
                 ))}
 
                 {/* Create store tile */}
-                <div
+                {/* <div
                     onClick={() => setShowModal(true)}
                     className="rounded-xl border-2 border-dashed border-gray-200 bg-(--txt-clr) flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:border-(--prof-clr) hover:bg-(--prof-clr)/5 transition-all min-h-[100px]"
                 >
                     <Plus size={24} className="text-(--pry-clr)" />
                     <span className="text-sm text-(--pry-clr)">Create store</span>
-                </div>
+                </div> */}
             </div>
 
-            {showModal && (
+            {/* {showModal && (
                 <CreateStoreBtn
                     label=""
                     _forceOpen
                     onStoreCreated={() => { setShowModal(false); onStoreCreated(); }}
                     _onClose={() => setShowModal(false)}
                 />
-            )}
+            )} */}
         </>
     );
 }

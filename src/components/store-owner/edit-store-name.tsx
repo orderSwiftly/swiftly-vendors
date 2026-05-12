@@ -185,7 +185,7 @@ export default function EditStoreNameModal({ store, onClose, onSuccess, onImageU
                     disabled={uploadingImage}
                 />
 
-                {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+                {error && <p className="text-xs text-red-500 mt-2 pry-ff">{error}</p>}
 
                 <div className="flex gap-3 mt-5 sec-ff">
                     <button

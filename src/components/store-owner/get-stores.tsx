@@ -3,12 +3,11 @@
 "use client";
 import { getStores, deactivateStore, reactivateStore, deactivateLocation, activateLocation, openStore, closeStore, type Store, type StoreLocation } from "@/lib/store";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
 import Spinner from "../ui/spinner";
 import { getProfile } from "@/lib/profile";
 import EditStoreNameModal from "./edit-store-name";
 import EditLocationModal from "./edit-location";
-import AddLocationModal from "./add-location-btn";
+// import AddLocationModal from "./add-location-btn";
 
 interface ProfileData {
     name: string;
@@ -63,15 +62,15 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
         );
     };
 
-    const handleAddLocationSuccess = (storeId: string, newLocations: StoreLocation[]) => {
-        setStores((prev) =>
-            prev.map((s) =>
-                s.id === storeId
-                    ? { ...s, locations: [...s.locations, ...newLocations] }
-                    : s
-            )
-        );
-    };
+    // const handleAddLocationSuccess = (storeId: string, newLocations: StoreLocation[]) => {
+    //     setStores((prev) =>
+    //         prev.map((s) =>
+    //             s.id === storeId
+    //                 ? { ...s, locations: [...s.locations, ...newLocations] }
+    //                 : s
+    //         )
+    //     );
+    // };
 
     const handleDeactivateStore = async (storeId: string) => {
         try {
@@ -102,13 +101,11 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                 setStores((prev) =>
                     prev.map((s) => (s.id === storeId ? { ...s, is_open: false } : s))
                 );
-                // console.log(`Store ${storeId} closed successfully`);
             } else {
                 await openStore(storeId);
                 setStores((prev) =>
                     prev.map((s) => (s.id === storeId ? { ...s, is_open: true } : s))
                 );
-                // console.log(`Store ${storeId} opened successfully`);
             }
         } catch (err: unknown) {
             console.error(err instanceof Error ? err.message : `Failed to ${currentStatus ? "close" : "open"} store.`);
@@ -181,9 +178,9 @@ export default function GetStores({ refreshKey }: Readonly<GetStoresProps>) {
                         onLocationEditSuccess={(locationId, updatedFields) =>
                             handleLocationEditSuccess(store.id, locationId, updatedFields)
                         }
-                        onAddLocationSuccess={(newLocations) =>
-                            handleAddLocationSuccess(store.id, newLocations)
-                        }
+                        // onAddLocationSuccess={(newLocations) =>
+                        //     handleAddLocationSuccess(store.id, newLocations)
+                        // }
                         onDeactivateLocation={(locationId) => handleDeactivateLocation(store.id, locationId)}
                         onActivateLocation={(locationId) => handleActivateLocation(store.id, locationId)}
                     />
@@ -201,7 +198,7 @@ function StoreBlock({
     onReactivate,
     onToggleStatus,
     onLocationEditSuccess,
-    onAddLocationSuccess,
+    // onAddLocationSuccess,
     onDeactivateLocation,
     onActivateLocation,
 }: Readonly<{
@@ -212,12 +209,12 @@ function StoreBlock({
     onReactivate: () => Promise<void>;
     onToggleStatus: () => Promise<void>;
     onLocationEditSuccess: (locationId: string, updatedFields: { name?: string; address?: string }) => void;
-    onAddLocationSuccess: (newLocations: StoreLocation[]) => void;
+    // onAddLocationSuccess: (newLocations: StoreLocation[]) => void;
     onDeactivateLocation: (locationId: string) => Promise<void>;
     onActivateLocation: (locationId: string) => Promise<void>;
 }>) {
     const [editingLocation, setEditingLocation] = useState<StoreLocation | null>(null);
-    const [addingLocation, setAddingLocation] = useState(false);
+    // const [addingLocation, setAddingLocation] = useState(false);
     const [deactivating, setDeactivating] = useState(false);
     const [reactivating, setReactivating] = useState(false);
     const [togglingStatus, setTogglingStatus] = useState(false);
@@ -277,7 +274,7 @@ function StoreBlock({
                     }}
                 />
             )}
-            {addingLocation && (
+            {/* {addingLocation && (
                 <AddLocationModal
                     storeId={store.id}
                     onClose={() => setAddingLocation(false)}
@@ -286,7 +283,7 @@ function StoreBlock({
                         setAddingLocation(false);
                     }}
                 />
-            )}
+            )} */}
             <div className="border border-gray-200 rounded-xl bg-white p-4 md:p-6">
                 {/* Store header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
@@ -373,13 +370,13 @@ function StoreBlock({
                     </div>
                 </div>
 
-                <button
+                {/* <button
                     onClick={() => setAddingLocation(true)}
                     className="mt-4 flex items-center gap-1.5 text-sm font-medium bg-(--prof-clr) text-(--txt-clr) px-4 py-2 rounded-md hover:bg-(--acc-clr)/80 transition-colors cursor-pointer"
                 >
                     <Plus size={14} />
                     Add another location
-                </button>
+                </button> */}
             </div>
         </>
     );
@@ -422,7 +419,6 @@ function LocationRow({
                     <p className="text-sm text-gray-800 font-semibold">{location.name}</p>
                     <p className="text-xs mt-0.5 text-gray-400">{location.address}</p>
                 </div>
-                {/* Badge visible inline on mobile, hidden on sm+ (shown in actions row) */}
                 <span className={`sm:hidden text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
                     {active ? "Active" : "Inactive"}
                 </span>
