@@ -1,7 +1,7 @@
 {
   "id": "/auth",
-  "name": "Swiftly IMS",
-  "short_name": "Swiftly IMS",
+  "name": "Swiftly Vendors",
+  "short_name": "Swiftly Vendors",
   "start_url": "/auth",
   "display": "standalone",
   "background_color": "#ffffff",

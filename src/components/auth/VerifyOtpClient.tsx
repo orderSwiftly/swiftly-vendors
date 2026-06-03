@@ -109,7 +109,7 @@ export default function VerifyOtpClient() {
         <div className="flex items-center gap-2">
           <Image src="/brand-logo.png" alt="Swiftly" width={32} height={32} />
         </div>
-        <p className="text-sm font-medium text-gray-600 -mt-4">Swiftly IMS</p>
+        <p className="text-sm font-medium text-gray-600 -mt-4">Swiftly Vendors</p>
 
         {/* OTP inputs */}
         <div className="flex gap-3 justify-center">

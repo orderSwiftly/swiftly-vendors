@@ -14,7 +14,7 @@ export default function Home() {
         <div className="flex flex-col items-center gap-3">
           <Image
             src="/brand-logo.png"
-            alt="Swiftly IMS"
+            alt="Swiftly Vendors"
             width={72}
             height={72}
             loading="eager"
@@ -26,7 +26,7 @@ export default function Home() {
               className="text-2xl sm:text-3xl font-bold text-(--pry-clr)"
               style={{ fontFamily: "var(--pry-ff)" }}
             >
-              Welcome to Swiftly IMS
+              Welcome to Swiftly Vendors
             </h1>
             <p
               className="text-sm sm:text-base mt-1.5 text-(--sec-clr)"

@@ -43,7 +43,7 @@ export function IOSInstallPrompt() {
     <div className="fixed bottom-4 left-4 right-4 bg-(--txt-clr) rounded-lg shadow-xl p-4 border border-gray-200 z-50">
       <div className="flex justify-between items-start">
         <div>
-          <h4 className="font-semibold mb-1">Install Swiftly IMS</h4>
+          <h4 className="font-semibold mb-1">Install Swiftly Vendors</h4>
           <p className="text-sm text-gray-600">
             For the best experience with push notifications, install our app:
           </p>

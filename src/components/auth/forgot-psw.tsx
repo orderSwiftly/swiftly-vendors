@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6">
                 <div className="flex flex-col items-center gap-1">
                     <Image src="/brand-logo.png" alt="Swiftly" width={36} height={36} />
-                    <span className="text-sm font-semibold text-gray-700">Swiftly IMS</span>
+                    <span className="text-sm font-semibold text-gray-700">Swiftly Vendors</span>
                 </div>
 
                 <div className="text-center">
